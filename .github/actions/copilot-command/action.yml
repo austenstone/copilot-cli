@@ -21,7 +21,7 @@ runs:
       id: copilot
       shell: bash
       env:
-        GITHUB_TOKEN: ${{ inputs.github-token }}
+        GH_TOKEN: ${{ inputs.github-token }}
         PROMPT: |
           ${{ inputs.prompt }}
 
