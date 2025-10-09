@@ -9,6 +9,7 @@ jobs:
     if: ${{ github.event.workflow_run.conclusion == 'failure' }}
     steps:
       - uses: actions/checkout@v5
+      - run: npm install -g @github/copilot
       - run: |
           copilot -p "The build job failed in workflow run $WORKFLOW_RUN. Repository: $REPO, Branch: $BRANCH, Commit: $COMMIT. Please analyze the failure and suggest a fix. Create a pull request with the necessary changes." --allow-all-tools
         env:
