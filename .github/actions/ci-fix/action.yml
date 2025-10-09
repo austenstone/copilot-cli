@@ -14,6 +14,21 @@ runs:
     - uses: actions/checkout@v5
     - run: npm install -g @github/copilot
       shell: bash
+    - run: |
+        mkdir -p ~/.copilot
+        cat > ~/.copilot/mcp-config.json << 'EOF'
+        {
+          "mcpServers": {
+            "actions-toolkit-mcp": {
+              "type": "local",
+              "command": "npx",
+              "tools": [ "*" ],
+              "args": ["-y", "actions-toolkit-mcp"]
+            }
+          }
+        }
+        EOF
+      shell: bash
     - run: copilot -p "$PROMPT" --allow-all-tools
       id: copilot
       shell: bash
