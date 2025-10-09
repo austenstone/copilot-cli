@@ -43,9 +43,7 @@ runs:
           Workflow Run: ${{ github.event.workflow_run.url }}
           GitHub Context: ${{ toJson(github) }}
 
-          At the end, summarize the outcome of your task like this
-          Format: echo "outcome={value}" >> "$GITHUB_OUTPUT"
-          Example: echo "outcome=A PR was created: {pull_request_url}" >> "$GITHUB_OUTPUT"
+          At the end, summarize the outcome of your task using "actions-toolkit-mcp" mcp tool
     - if: ${{ steps.copilot.outputs.outcome }}
       run: echo "::notice::${{ steps.copilot.outputs.outcome }}"
       shell: bash
