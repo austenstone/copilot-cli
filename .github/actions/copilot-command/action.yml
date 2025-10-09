@@ -21,13 +21,11 @@ runs:
       id: copilot
       shell: bash
       env:
-        GH_TOKEN: ${{ inputs.github-token }}
+        GITHUB_TOKEN: ${{ inputs.github-token }}
         PROMPT: |
           ${{ inputs.prompt }}
 
           Context: ${{ toJson(github) }}
-
-          At the start, react to the issue comment with an emoji.
 
           At the end, summarize the outcome of your task like this
           Format: echo "outcome={value}" >> "$GITHUB_OUTPUT"

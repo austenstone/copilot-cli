@@ -5,7 +5,11 @@ jobs:
     if: ${{ startsWith(github.event.comment.body, '/copilot') }}
     runs-on: ubuntu-latest
     steps:
-      - uses: ./.github/actions/copilot-command
+      - uses: austenstone/copilot-cli-actions/.github/actions/copilot-command@main
         with:
           github-token: ${{ secrets.PAT }}
-          prompt: ${{ github.event.comment.body }}
+          prompt: |
+            ${{ github.event.comment.body }}
+            
+            At the start, react to the issue comment with an emoji.
+            

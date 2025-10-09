@@ -23,7 +23,7 @@ runs:
       id: copilot
       shell: bash
       env:
-        GH_TOKEN: ${{ inputs.github-token }}
+        GITHUB_TOKEN: ${{ inputs.github-token }}
         PROMPT: |
           Dependabot has opened a pull request to update dependencies.
           Research and understand code changes required to update the dependencies.

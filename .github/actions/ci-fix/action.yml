@@ -18,7 +18,7 @@ runs:
       id: copilot
       shell: bash
       env:
-        GH_TOKEN: ${{ inputs.github-token }}
+        GITHUB_TOKEN: ${{ inputs.github-token }}
         PROMPT: |
           The GitHub Actions workflow run failed.
           Please analyze the failure and suggest a fix.
