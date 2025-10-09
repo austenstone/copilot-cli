@@ -9,6 +9,7 @@ jobs:
       - run: |
           copilot -p "${{ github.event.comment.body }}. Context: $GITHUB_CONTEXT" --allow-all-tools
         env:
+          GH_TOKEN: ${{ secrets.PAT }}
           GITHUB_CONTEXT: ${{ toJson(github) }}
           JOB_CONTEXT: ${{ toJson(job) }}
           STEPS_CONTEXT: ${{ toJson(steps) }}

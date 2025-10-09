@@ -13,7 +13,7 @@ jobs:
       - run: |
           copilot -p "The build job failed in workflow run $WORKFLOW_RUN. Repository: $REPO, Branch: $BRANCH, Commit: $COMMIT. Please analyze the failure and suggest a fix. Create a pull request with the necessary changes." --allow-all-tools
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.PAT }}
           WORKFLOW_RUN: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           REPO: ${{ github.repository }}
           BRANCH: ${{ github.ref_name }}
