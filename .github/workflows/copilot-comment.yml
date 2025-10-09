@@ -1,0 +1,11 @@
+on: issue_comment
+
+jobs:
+  copilot:
+    if: ${{ startsWith(github.event.comment.body, '/copilot') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: ./.github/actions/copilot-command
+        with:
+          github-token: ${{ secrets.PAT }}
+          prompt: ${{ github.event.comment.body }}

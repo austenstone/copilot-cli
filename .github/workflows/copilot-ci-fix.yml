@@ -1,0 +1,16 @@
+on:
+  workflow_run:
+    workflows: [CI] # add workflows here
+    types: [completed]
+
+jobs:
+  on-failure:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: ci-fix
+      cancel-in-progress: true
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+    steps:
+      - uses: ./.github/actions/ci-fix
+        with:
+          github-token: ${{ secrets.PAT }}
