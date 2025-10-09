@@ -11,10 +11,8 @@ jobs:
       - uses: actions/checkout@v5
       - run: npm install -g @github/copilot
       - run: |
-          copilot -p "The build job failed in workflow run $WORKFLOW_RUN. Repository: $REPO, Branch: $BRANCH, Commit: $COMMIT. Please analyze the failure and suggest a fix. Create a pull request with the necessary changes." --allow-all-tools
+          copilot -p "The job failed in the GitHub Actions workflow run. Please analyze the failure and suggest a fix. Create a pull request with the necessary changes. workflow_run: $WORKFLOW_RUN" --allow-all-tools
         env:
           GH_TOKEN: ${{ secrets.PAT }}
-          WORKFLOW_RUN: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          REPO: ${{ github.repository }}
-          BRANCH: ${{ github.ref_name }}
-          COMMIT: ${{ github.sha }}
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+          WORKFLOW_RUN: ${{ github.event.workflow_run.url }}
