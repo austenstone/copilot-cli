@@ -23,11 +23,11 @@ jobs:
             Create a pull request with the necessary changes.
             Include the error logs and any relevant information.
 
-            If you create a pull request, please output the URL like this:
-            echo "{pull_request_url}={https://github.com/value}" >> "$GITHUB_OUTPUT"
-            
+            At the end, summarize the outcome of your task like this
+            Format: echo "outcome={value}" >> "$GITHUB_OUTPUT"
+            Example: echo "outcome=A PR was created: {pull_request_url}" >> "$GITHUB_OUTPUT"
+
             Workflow Run: ${{ github.event.workflow_run.url }}
             GitHub Context: ${{ toJson(github) }}
-      - run: |
-          echo "::notice A PR was created: ${{ steps.copilot.outputs.pull_request_url }}"
-        if: ${{ steps.copilot.outputs.pull_request_url }}
+      - if: ${{ steps.copilot.outputs.outcome }}
+        run: echo "::notice ${{ steps.copilot.outputs.outcome }}"
