@@ -1,0 +1,15 @@
+on: issue_comment
+
+jobs:
+  copilot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - run: npm install -g @github/copilot
+      - run: |
+          copilot -p "${{ github.event.comment.body }}. Context: $GITHUB_CONTEXT" --allow-all-tools
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+          JOB_CONTEXT: ${{ toJson(job) }}
+          STEPS_CONTEXT: ${{ toJson(steps) }}
+          RUNNER_CONTEXT: ${{ toJson(runner) }}
