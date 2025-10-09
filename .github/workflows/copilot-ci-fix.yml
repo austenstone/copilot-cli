@@ -11,6 +11,6 @@ jobs:
       cancel-in-progress: true
     if: ${{ github.event.workflow_run.conclusion == 'failure' }}
     steps:
-      - uses: ./.github/actions/ci-fix
+      - uses: austenstone/copilot-cli-actions/.github/actions/ci-fix@main
         with:
           github-token: ${{ secrets.PAT }}

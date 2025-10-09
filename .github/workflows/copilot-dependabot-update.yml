@@ -9,6 +9,6 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event.pull_request.user.login == 'dependabot[bot]'
     steps:
-      - uses: ./.github/actions/dependabot-update
+      - uses: austenstone/copilot-cli-actions/.github/actions/dependabot-update@main
         with:
           github-token: ${{ secrets.PAT }}
