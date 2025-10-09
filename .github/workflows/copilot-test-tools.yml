@@ -32,7 +32,5 @@ jobs:
           GH_TOKEN: ${{ secrets.PAT }}
           PROMPT: |
             list all your tools.
-      - run: |
-          cat ~/.copilot/mcp-config.json
-              - name: Setup tmate session
+      - run: cat ~/.copilot/mcp-config.json
       - uses: mxschmitt/action-tmate@v3
