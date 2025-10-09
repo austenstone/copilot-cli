@@ -1,0 +1,18 @@
+on:
+  workflow_run:
+    workflows: [CI] # add workflows here
+    types: [completed]
+
+jobs:
+  on-failure:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+    steps:
+      - uses: actions/checkout@v5
+      - run: |
+          copilot -p "The build job failed in workflow run $WORKFLOW_RUN. Repository: $REPO, Branch: $BRANCH, Commit: $COMMIT. Please analyze the failure and suggest a fix." --allow-all-tools
+        env:
+          WORKFLOW_RUN: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          REPO: ${{ github.repository }}
+          BRANCH: ${{ github.ref_name }}
+          COMMIT: ${{ github.sha }}
