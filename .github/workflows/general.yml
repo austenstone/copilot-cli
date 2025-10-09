@@ -16,6 +16,8 @@ jobs:
 
             Context: ${{ toJson(github) }}
 
+            At the start, react to the issue comment with an emoji.
+
             At the end, summarize the outcome of your task like this
             Format: echo "outcome={value}" >> "$GITHUB_OUTPUT"
       - if: ${{ steps.copilot.outputs.outcome }}
