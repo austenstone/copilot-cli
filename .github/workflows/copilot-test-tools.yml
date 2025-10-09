@@ -1,0 +1,39 @@
+on:
+  push:
+  workflow_run:
+    workflows: [CI] # add workflows here
+    types: [completed]
+
+jobs:
+  on-failure:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: ci-fix
+      cancel-in-progress: true
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+    steps:
+      - uses: actions/checkout@v5
+      - run: npm install -g @github/copilot
+      - run: |
+          mkdir -p ~/.copilot
+          cat > ~/.copilot/mcp-config.json << EOF
+          {
+            "mcpServers": {
+              "actions-toolkit-mcp": {
+                "type": "local",
+                "command": "npx",
+                "tools": [ "*" ],
+                "args": ["-y", "actions-toolkit-mcp"]
+              }
+            }
+          }
+          EOF
+          cat ~/.copilot/mcp-config.json
+      - run: copilot -p "$PROMPT" --allow-all-tools
+        id: copilot
+        env:
+          GH_TOKEN: ${{ secrets.PAT }}
+          PROMPT: |
+            list all your tools.
+      - run: |
+          cat ~/.copilot/mcp-config.json

@@ -29,7 +29,7 @@ runs:
         }
         EOF
       shell: bash
-    - run: copilot -p "$PROMPT" --allow-all-tools --banner
+    - run: copilot -p "$PROMPT" --allow-all-tools
       id: copilot
       shell: bash
       env:
