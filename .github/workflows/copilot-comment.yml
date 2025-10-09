@@ -10,6 +10,9 @@ jobs:
           github-token: ${{ secrets.PAT }}
           prompt: |
             ${{ github.event.comment.body }}
+
+            At the start, acknowledge the issue comment by reacting with an emoji.
+
+            Once you have completed your task, please summarize the outcome and any relevant details by responding to the comment.
             
-            At the start, react to the issue comment with an emoji.
-            
+
