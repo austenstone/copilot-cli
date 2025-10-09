@@ -2,16 +2,21 @@ on: issue_comment
 
 jobs:
   copilot:
+    if: ${{ startsWith(github.event.comment.body, '/copilot') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
       - run: npm install -g @github/copilot
-      - run: |
-          copilot -p "${{ github.event.comment.body }}. Context: $GITHUB_CONTEXT" --allow-all-tools
+      - run: copilot -p "$PROMPT" --allow-all-tools
+        id: copilot
         env:
           GH_TOKEN: ${{ secrets.PAT }}
-          GITHUB_CONTEXT: ${{ toJson(github) }}
-          JOB_CONTEXT: ${{ toJson(job) }}
-          STEPS_CONTEXT: ${{ toJson(steps) }}
-          RUNNER_CONTEXT: ${{ toJson(runner) }}
-          
+          PROMPT: |
+            ${{ github.event.comment.body }}
+
+            Context: $GITHUB_CONTEXT
+
+            At the end, summarize the outcome of your task like this
+            Format: echo "outcome={value}" >> "$GITHUB_OUTPUT"
+      - if: ${{ steps.copilot.outputs.outcome }}
+        run: echo "::notice::${{ steps.copilot.outputs.outcome }}"
