@@ -9,8 +9,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    
+
     steps:
-      - uses: actions/checkout@v5
+      # - uses: actions/checkout@v5
       - run: echo "Hello, world!"
       - run: exit 1
