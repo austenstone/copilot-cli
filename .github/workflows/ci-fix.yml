@@ -10,7 +10,9 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - run: npm install -g @github/copilot
-      - run: copilot -p "$PROMPT" --allow-all-tools
+      - run: |
+          echo $PROMPT
+          copilot -p "$PROMPT" --allow-all-tools
         env:
           GH_TOKEN: ${{ secrets.PAT }}
           GITHUB_CONTEXT: ${{ toJson(github) }}
