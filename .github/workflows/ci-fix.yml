@@ -13,16 +13,21 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - run: npm install -g @github/copilot
-      - run: |
-          echo $PROMPT
-          copilot -p "$PROMPT" --allow-all-tools
+      - run: copilot -p "$PROMPT" --allow-all-tools
+        id: copilot
         env:
           GH_TOKEN: ${{ secrets.PAT }}
           PROMPT: |
-            The job failed in the GitHub Actions workflow run.
+            The GitHub Actions workflow run failed.
             Please analyze the failure and suggest a fix.
             Create a pull request with the necessary changes.
             Include the error logs and any relevant information.
+
+            If you create a pull request, please output the URL like this:
+            echo "{pull_request_url}={https://github.com/value}" >> "$GITHUB_OUTPUT"
             
             Workflow Run: ${{ github.event.workflow_run.url }}
             GitHub Context: ${{ toJson(github) }}
+      - run: |
+          echo "::notice A PR was created: ${{ steps.copilot.outputs.pull_request_url }}"
+        if: ${{ steps.copilot.outputs.pull_request_url }}
