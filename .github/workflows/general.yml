@@ -14,7 +14,7 @@ jobs:
           PROMPT: |
             ${{ github.event.comment.body }}
 
-            Context: $GITHUB_CONTEXT
+            Context: ${{ toJson(github) }}
 
             At the end, summarize the outcome of your task like this
             Format: echo "outcome={value}" >> "$GITHUB_OUTPUT"
