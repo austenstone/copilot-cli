@@ -15,7 +15,7 @@ jobs:
           node-version: '22'
       - run: npm install -g @github/copilot
       - run: |
-          mkdir -p /home/runner/.config/.copilot
+          mkdir -p $XDG_CONFIG_HOME/.copilot
           echo '{
             "mcpServers": {
               "actions-toolkit-mcp": {
@@ -24,7 +24,7 @@ jobs:
                 "tools": ["*"]
               }
             }
-          }' > /home/runner/.config/.copilot/mcp-config.json
+          }' > $XDG_CONFIG_HOME/.copilot/mcp-config.json
       - run: copilot -p "$PROMPT" --allow-all-tools --log-level debug --log-dir ~/.copilot/logs
         id: copilot
         env:
