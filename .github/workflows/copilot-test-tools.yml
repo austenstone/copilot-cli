@@ -25,7 +25,7 @@ jobs:
               }
             }
           }' > $XDG_CONFIG_HOME/.copilot/mcp-config.json
-      - run: copilot -p "$PROMPT" --allow-all-tools --log-level debug --log-dir ~/.copilot/logs
+      - run: copilot -p "$PROMPT" --allow-all-tools --log-level all --log-dir ~/.copilot/logs
         id: copilot
         env:
           GH_TOKEN: ${{ secrets.PAT }}
