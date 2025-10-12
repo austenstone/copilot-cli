@@ -20,7 +20,7 @@ jobs:
           {
             "mcpServers": {
               "actions-toolkit-mcp": {
-                "type": "local",
+                "type": "austen-fails",
                 "command": "npx",
                 "tools": ["*"],
                 "args": ["-y", "actions-toolkit-mcp"]
