@@ -26,12 +26,16 @@ jobs:
           }
           EOF
           cat ~/.copilot/mcp-config.json
-      - run: copilot -p "$PROMPT" --allow-all-tools
+      - run: copilot -p "$PROMPT" --allow-all-tools --log-level debug --log-dir ./logs
         id: copilot
         env:
           GH_TOKEN: ${{ secrets.PAT }}
           PROMPT: |
             list all your tools.
       - run: cat ~/.copilot/mcp-config.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: copilot-logs
+          path: /home/runner/.copilot/logs/
       - uses: mxschmitt/action-tmate@v3
       
