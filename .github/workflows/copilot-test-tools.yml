@@ -30,7 +30,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.PAT }}
           PROMPT: |
-            list all your tools.
+            list all your tools. Test the actions-toolkit-mcp tool.
       - uses: actions/upload-artifact@v4
         with:
           name: copilot-logs
