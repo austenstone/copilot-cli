@@ -34,3 +34,4 @@ jobs:
             list all your tools.
       - run: cat ~/.copilot/mcp-config.json
       - uses: mxschmitt/action-tmate@v3
+      
