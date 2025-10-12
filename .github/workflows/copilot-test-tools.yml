@@ -40,5 +40,5 @@ jobs:
         with:
           name: copilot-logs
           path: /home/runner/.copilot/logs/
-      - uses: mxschmitt/action-tmate@v3
+      # - uses: mxschmitt/action-tmate@v3
       
