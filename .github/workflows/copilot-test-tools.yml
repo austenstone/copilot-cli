@@ -32,6 +32,7 @@ jobs:
       - run: copilot -p "$PROMPT" --allow-all-tools --log-level debug --log-dir ./logs
         id: copilot
         env:
+          GITHUB_COPILOT_3P_MCP_ENABLED: true
           GH_TOKEN: ${{ secrets.PAT }}
           PROMPT: |
             list all your tools.
