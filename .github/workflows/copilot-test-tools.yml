@@ -39,6 +39,6 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: copilot-logs
-          path: /home/runner/.copilot/logs/
+          path: ~/.copilot/logs/
       # - uses: mxschmitt/action-tmate@v3
       
