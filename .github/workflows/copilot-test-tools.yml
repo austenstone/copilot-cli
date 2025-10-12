@@ -25,14 +25,12 @@ jobs:
               }
             }
           }' > /home/runner/.config/.copilot/mcp-config.json
-          cat /home/runner/.config/.copilot/mcp-config.json
       - run: copilot -p "$PROMPT" --allow-all-tools --log-level debug --log-dir ~/.copilot/logs
         id: copilot
         env:
           GH_TOKEN: ${{ secrets.PAT }}
           PROMPT: |
             list all your tools.
-      - run: cat /home/runner/.config/.copilot/mcp-config.json
       - uses: actions/upload-artifact@v4
         with:
           name: copilot-logs
