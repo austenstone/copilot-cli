@@ -12,13 +12,13 @@ jobs:
       - run: npm install -g @github/copilot
       - run: |
           mkdir -p ~/.copilot
-          cat > ~/.copilot/mcp-config.json << EOF
+          cat > ~/.copilot/mcp-config.json << 'EOF'
           {
             "mcpServers": {
               "actions-toolkit-mcp": {
                 "type": "local",
                 "command": "npx",
-                "tools": [ "*" ],
+                "tools": ["*"],
                 "args": ["-y", "actions-toolkit-mcp"]
               }
             }
@@ -28,19 +28,6 @@ jobs:
       - run: copilot -p "$PROMPT" --allow-all-tools --log-level debug --log-dir ~/.copilot/logs
         id: copilot
         env:
-          GITHUB_COPILOT_CLI_MODE: true  # This skips default servers
-          GITHUB_COPILOT_3P_MCP_ENABLED: true
-          GITHUB_COPILOT_MCP_JSON: |
-            {
-              "mcpServers": {
-                "actions-toolkit-mcp": {
-                  "type": "local",
-                  "command": "npx",
-                  "tools": [ "*" ],
-                  "args": ["-y", "actions-toolkit-mcp"]
-                }
-              }
-            }
           GH_TOKEN: ${{ secrets.PAT }}
           PROMPT: |
             list all your tools.
