@@ -8,6 +8,9 @@ jobs:
   on-failure:
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+    concurrency:
+      group: 'copilot-test-tools'
+      cancel-in-progress: true
     steps:
       - uses: actions/checkout@v5
       - run: npm install -g @github/copilot
