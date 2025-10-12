@@ -15,27 +15,24 @@ jobs:
           node-version: '22'
       - run: npm install -g @github/copilot
       - run: |
-          mkdir -p ~/.copilot
-          cat > ~/.copilot/mcp-config.json << 'EOF'
-          {
+          mkdir -p /home/runner/.config/.copilot
+          echo '{
             "mcpServers": {
               "actions-toolkit-mcp": {
-                "type": "austen-fails",
                 "command": "npx",
-                "tools": ["*"],
-                "args": ["-y", "actions-toolkit-mcp"]
+                "args": ["-y", "actions-toolkit-mcp"],
+                "tools": ["*"]
               }
             }
-          }
-          EOF
-          cat ~/.copilot/mcp-config.json
+          }' > /home/runner/.config/.copilot/mcp-config.json
+          cat /home/runner/.config/.copilot/mcp-config.json
       - run: copilot -p "$PROMPT" --allow-all-tools --log-level debug --log-dir ~/.copilot/logs
         id: copilot
         env:
           GH_TOKEN: ${{ secrets.PAT }}
           PROMPT: |
             list all your tools.
-      - run: cat ~/.copilot/mcp-config.json
+      - run: cat /home/runner/.config/.copilot/mcp-config.json
       - uses: actions/upload-artifact@v4
         with:
           name: copilot-logs
