@@ -14,23 +14,24 @@ inputs:
   mcp-config:
     description: 'MCP configuration for GitHub Copilot'
     required: false
-    default: '{
-      "mcpServers": {
-        "actions-toolkit-mcp": {
-          "command": "npx",
-          "args": ["-y", "actions-toolkit-mcp"],
-          "tools": ["*"],
-          "env": {
-            "GITHUB_ENV": "${{ env.GITHUB_ENV }}",
-            "GITHUB_PATH": "${{ env.GITHUB_PATH }}",
-            "GITHUB_OUTPUT": "${{ env.GITHUB_OUTPUT }}",
-            "GITHUB_STATE": "${{ env.GITHUB_STATE }}",
-            "GITHUB_STEP_SUMMARY": "${{ env.GITHUB_STEP_SUMMARY }}",
-            "GITHUB_EVENT_PATH": "${{ env.GITHUB_EVENT_PATH }}"
+    default: |
+      '{
+        "mcpServers": {
+          "actions-toolkit-mcp": {
+            "command": "npx",
+            "args": ["-y", "actions-toolkit-mcp"],
+            "tools": ["*"],
+            "env": {
+              "GITHUB_ENV": "${{ env.GITHUB_ENV }}",
+              "GITHUB_PATH": "${{ env.GITHUB_PATH }}",
+              "GITHUB_OUTPUT": "${{ env.GITHUB_OUTPUT }}",
+              "GITHUB_STATE": "${{ env.GITHUB_STATE }}",
+              "GITHUB_STEP_SUMMARY": "${{ env.GITHUB_STEP_SUMMARY }}",
+              "GITHUB_EVENT_PATH": "${{ env.GITHUB_EVENT_PATH }}"
+            }
           }
         }
-      }
-    }'
+      }'
 runs:
   using: 'composite'
   steps:
