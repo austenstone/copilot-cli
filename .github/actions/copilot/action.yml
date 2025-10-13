@@ -39,7 +39,7 @@ runs:
               "GITHUB_PATH": "${{ env.GITHUB_PATH }}",
               "GITHUB_OUTPUT": "${{ env.GITHUB_OUTPUT }}",
               "GITHUB_STATE": "${{ env.GITHUB_STATE }}",
-              "GITHUB_STEP_SUMMARY": "${{ env.GITHUB_STEP_SUMMARY }}",
+              "GITHUB_STEP_SUMMARY": $GITHUB_STEP_SUMMARY,
               "GITHUB_EVENT_PATH": "${{ env.GITHUB_EVENT_PATH }}"
             }
           }
@@ -48,6 +48,8 @@ runs:
         # Merge user-provided MCP config with hardcoded config
         echo '${{ inputs.mcp-config }}' | jq --argjson toolkit "$ACTIONS_TOOLKIT_MCP" \
           '.mcpServers += $toolkit' > $XDG_CONFIG_HOME/.copilot/mcp-config.json
+      env:
+        GITHUB_STEP_SUMMARY: ${{ env.GITHUB_STEP_SUMMARY }}
       shell: bash
     - run: copilot -p "$PROMPT" --allow-all-tools --log-level all --log-dir ~/.copilot/logs --save-trajectory-output ~/.copilot/trajectory.md
       id: copilot
