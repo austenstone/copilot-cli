@@ -48,7 +48,8 @@ runs:
         GITHUB_STEP_SUMMARY: ${{ github.step_summary }}
       shell: bash
     - run: |
-        cat $XDG_CONFIG_HOME/.copilot/config.json
+        ls -al $XDG_CONFIG_HOME/.copilot
+        # cat $XDG_CONFIG_HOME/.copilot/config.json
       shell: bash
     - run: copilot -p "$PROMPT" --allow-all-tools --log-level all --log-dir ~/.copilot/logs --save-trajectory-output ~/.copilot/trajectory.md
       id: copilot
