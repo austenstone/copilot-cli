@@ -1,0 +1,12 @@
+on: push
+
+jobs:
+  copilot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: austenstone/copilot-cli-actions/.github/actions/copilot@main
+        with:
+          github-token: ${{ secrets.PAT }}
+          prompt: |
+            Create annotations and write a job summary using mcp tools.
+

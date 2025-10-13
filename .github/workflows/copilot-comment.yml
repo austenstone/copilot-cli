@@ -5,7 +5,7 @@ jobs:
     if: ${{ startsWith(github.event.comment.body, '/copilot') }}
     runs-on: ubuntu-latest
     steps:
-      - uses: austenstone/copilot-cli-actions/.github/actions/copilot-command@main
+      - uses: austenstone/copilot-cli-actions/.github/actions/copilot@main
         with:
           github-token: ${{ secrets.PAT }}
           prompt: |
