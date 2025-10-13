@@ -49,7 +49,11 @@ runs:
       shell: bash
     - run: |
         ls -al $XDG_CONFIG_HOME/.copilot
-        # cat $XDG_CONFIG_HOME/.copilot/config.json
+        CONFIG='{
+          "trusted_folders": ["/"]
+        }'
+        echo "$CONFIG" > $XDG_CONFIG_HOME/.copilot/config.json
+        cat $XDG_CONFIG_HOME/.copilot/config.json
       shell: bash
     - run: copilot -p "$PROMPT" --allow-all-tools --log-level all --log-dir ~/.copilot/logs --save-trajectory-output ~/.copilot/trajectory.md
       id: copilot
