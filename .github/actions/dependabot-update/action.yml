@@ -4,10 +4,6 @@ inputs:
   github-token:
     description: 'GitHub Personal Access Token with required permissions'
     required: true
-outputs:
-  outcome:
-    description: 'Summary of the action outcome'
-    value: ${{ steps.copilot.outputs.outcome }}
 runs:
   using: 'composite'
   steps:
@@ -16,15 +12,10 @@ runs:
       uses: dependabot/fetch-metadata@d7267f607e9d3fb96fc2fbe83e0af444713e90b7
       with:
         github-token: "${{ github.token }}"
-    - uses: actions/checkout@v5
-    - run: npm install -g @github/copilot
-      shell: bash
-    - run: copilot -p "$PROMPT" --allow-all-tools
-      id: copilot
-      shell: bash
-      env:
-        GH_TOKEN: ${{ inputs.github-token }}
-        PROMPT: |
+    - uses: austenstone/copilot-cli-actions/.github/actions/copilot@main
+      with:
+        github-token: ${{ inputs.github-token }}
+        prompt: |
           Dependabot has opened a pull request to update dependencies.
           Research and understand code changes required to update the dependencies.
           Update the code as necessary to ensure compatibility with the new versions.
@@ -32,10 +23,3 @@ runs:
 
           GitHub Context: ${{ toJson(github) }}
           Dependabot Metadata: ${{ toJson(steps.metadata.outputs) }}
-
-          At the end, summarize the outcome of your task like this
-          Format: echo "outcome={value}" >> "$GITHUB_OUTPUT"
-          Example: echo "outcome=A PR was created: {pull_request_url}" >> "$GITHUB_OUTPUT"
-    - if: ${{ steps.copilot.outputs.outcome }}
-      run: echo "::notice::${{ steps.copilot.outputs.outcome }}"
-      shell: bash
