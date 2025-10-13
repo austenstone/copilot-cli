@@ -16,7 +16,20 @@ inputs:
     required: false
     default: |
       '{
-        "mcpServers": {
+        "mcpServers": { }
+      }'
+runs:
+  using: 'composite'
+  steps:
+    - uses: actions/setup-node@v4
+      with:
+        node-version: '22'
+    - run: npm install -g @github/copilot
+      shell: bash
+    - run: |
+        mkdir -p $XDG_CONFIG_HOME/.copilot
+        
+        ACTIONS_TOOLKIT_MCP='{
           "actions-toolkit-mcp": {
             "command": "npx",
             "args": ["-y", "actions-toolkit-mcp"],
@@ -30,19 +43,11 @@ inputs:
               "GITHUB_EVENT_PATH": "${{ env.GITHUB_EVENT_PATH }}"
             }
           }
-        }
-      }'
-runs:
-  using: 'composite'
-  steps:
-    - uses: actions/setup-node@v4
-      with:
-        node-version: '22'
-    - run: npm install -g @github/copilot
-      shell: bash
-    - run: |
-        mkdir -p $XDG_CONFIG_HOME/.copilot
-        echo '${{ inputs.mcp-config }}' > $XDG_CONFIG_HOME/.copilot/mcp-config.json
+        }'
+        
+        # Merge user-provided MCP config with hardcoded config
+        echo '${{ inputs.mcp-config }}' | jq --argjson toolkit "$ACTIONS_TOOLKIT_MCP" \
+          '.mcpServers += $toolkit' > $XDG_CONFIG_HOME/.copilot/mcp-config.json
       shell: bash
     - run: copilot -p "$PROMPT" --allow-all-tools --log-level all --log-dir ~/.copilot/logs --save-trajectory-output ~/.copilot/trajectory.md
       id: copilot
