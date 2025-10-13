@@ -10,5 +10,5 @@ jobs:
           prompt: |
             Create annotations and write a job summary using mcp tools.
 
-            If something fails try to understand why
+            If something fails try to understand why and suggest a fix.
 
