@@ -50,7 +50,13 @@ runs:
     - run: |
         ls -al $XDG_CONFIG_HOME/.copilot
         CONFIG='{
-          "trusted_folders": ["/"]
+          "banner": "never",
+          "render_markdown": true,
+          "screen_reader": false,
+          "theme": "auto",
+          "trusted_folders": [
+            "/home/runner"
+          ]
         }'
         echo "$CONFIG" > $XDG_CONFIG_HOME/.copilot/config.json
         cat $XDG_CONFIG_HOME/.copilot/config.json
@@ -58,6 +64,7 @@ runs:
     - run: copilot -p "$PROMPT" --allow-all-tools --log-level all --log-dir ~/.copilot/logs --save-trajectory-output ~/.copilot/trajectory.md
       id: copilot
       env:
+        GITHUB_STEP_SUMMARY: ${{ github.step_summary }}
         GH_TOKEN: ${{ inputs.github-token }}
         PROMPT: ${{ inputs.prompt }}
       shell: bash
