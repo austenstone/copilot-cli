@@ -49,6 +49,7 @@ runs:
       shell: bash
     - run: |
         cat $XDG_CONFIG_HOME/.copilot/config.json
+      shell: bash
     - run: copilot -p "$PROMPT" --allow-all-tools --log-level all --log-dir ~/.copilot/logs --save-trajectory-output ~/.copilot/trajectory.md
       id: copilot
       env:
