@@ -58,7 +58,7 @@ runs:
         name: copilot-logs
         path: |
           ~/.copilot/logs/
-          ${{ env.XDG_CONFIG_HOME }}/.copilot/
           ~/.copilot/trajectory.md
+          /home/runner/.config
     # - uses: mxschmitt/action-tmate@v3
     
