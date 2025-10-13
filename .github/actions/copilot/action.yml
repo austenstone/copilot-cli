@@ -15,9 +15,9 @@ inputs:
     description: 'MCP configuration for GitHub Copilot'
     required: false
     default: |
-      '{
+      {
         "mcpServers": { }
-      }'
+      }
 runs:
   using: 'composite'
   steps:
