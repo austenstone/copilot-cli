@@ -7,6 +7,7 @@ inputs:
 runs:
   using: 'composite'
   steps:
+    - uses: actions/checkout@v5
     - uses: austenstone/copilot-cli-actions/.github/actions/copilot@main
       with:
         github-token: ${{ inputs.github-token }}
