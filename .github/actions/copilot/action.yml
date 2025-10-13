@@ -43,6 +43,7 @@ runs:
         # Merge user-provided MCP config with hardcoded config
         echo '${{ inputs.mcp-config }}' | jq --argjson toolkit "$ACTIONS_TOOLKIT_MCP" \
           '.mcpServers += $toolkit' > $XDG_CONFIG_HOME/.copilot/mcp-config.json
+        cat $XDG_CONFIG_HOME/.copilot/mcp-config.json
       env:
         GITHUB_STEP_SUMMARY: ${{ github.step_summary }}
       shell: bash
