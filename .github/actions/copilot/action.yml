@@ -7,10 +7,6 @@ inputs:
   prompt:
     description: 'Prompt to send to GitHub Copilot'
     required: true
-  upload-artifact:
-    description: 'Upload artifact after running Copilot'
-    required: false
-    default: true
   mcp-config:
     description: 'MCP configuration for GitHub Copilot'
     required: false
@@ -18,6 +14,27 @@ inputs:
       {
         "mcpServers": { }
       }
+  copilot-config:
+    description: 'Configuration for GitHub Copilot'
+    required: false
+    default: |
+      {
+        "banner": "never",
+        "render_markdown": true,
+        "screen_reader": false,
+        "theme": "auto",
+        "trusted_folders": [
+          "/home/runner"
+        ]
+      }
+  log-level:
+    description: 'Log level for GitHub Copilot'
+    required: false
+    default: 'all'
+  upload-artifact:
+    description: 'Upload artifact after running Copilot'
+    required: false
+    default: true
 runs:
   using: 'composite'
   steps:
@@ -29,53 +46,18 @@ runs:
     - run: |
         mkdir -p $XDG_CONFIG_HOME/.copilot
         
-        ACTIONS_TOOLKIT_MCP='{
-          "actions-toolkit-mcp": {
-            "command": "npx",
-            "args": ["-y", "actions-toolkit-mcp"],
-            "tools": ["*"],
-            "env": {
-              "GITHUB_STEP_SUMMARY": "${GITHUB_STEP_SUMMARY}",
-              "GITHUB_ENV": "${GITHUB_ENV}",
-              "RUNNER_DEBUG": "${RUNNER_DEBUG}",
-              "GITHUB_SERVER_URL": "${GITHUB_SERVER_URL}",
-              "GITHUB_REPOSITORY": "${GITHUB_REPOSITORY}",
-              "GITHUB_EVENT_PATH": "${GITHUB_EVENT_PATH}"
-            }
-          }
-        }'
-        
-        # Merge user-provided MCP config with hardcoded config
-        echo '${{ inputs.mcp-config }}' | jq --argjson toolkit "$ACTIONS_TOOLKIT_MCP" \
-          '.mcpServers += $toolkit' > $XDG_CONFIG_HOME/.copilot/mcp-config.json
+        echo '${{ inputs.mcp-config }}' > $XDG_CONFIG_HOME/.copilot/mcp-config.json
         cat $XDG_CONFIG_HOME/.copilot/mcp-config.json
-      env:
-        GITHUB_STEP_SUMMARY: ${{ github.step_summary }}
-        GITHUB_ENV: ${{ github.env }}
-        RUNNER_DEBUG: ${{ runner.debug }}
-        GITHUB_SERVER_URL: ${{ github.server_url }}
-        GITHUB_REPOSITORY: ${{ github.repository }}
-        GITHUB_EVENT_PATH: ${{ github.event_path }}
-      shell: bash
-    - run: |
-        ls -al $XDG_CONFIG_HOME/.copilot
-        CONFIG='{
-          "banner": "never",
-          "render_markdown": true,
-          "screen_reader": false,
-          "theme": "auto",
-          "trusted_folders": [
-            "/home/runner"
-          ]
-        }'
+
         echo "$CONFIG" > $XDG_CONFIG_HOME/.copilot/config.json
         cat $XDG_CONFIG_HOME/.copilot/config.json
       shell: bash
-    - run: copilot -p "$PROMPT" --allow-all-tools --log-level all --log-dir ~/.copilot/logs --save-trajectory-output ~/.copilot/trajectory.md
+    - run: copilot -p "$PROMPT" --allow-all-tools --log-level "$LOG_LEVEL" --log-dir ~/.copilot/logs --save-trajectory-output ~/.copilot/trajectory.md
       id: copilot
       env:
         GH_TOKEN: ${{ inputs.github-token }}
         PROMPT: ${{ inputs.prompt }}
+        LOG_LEVEL: ${{ inputs.log-level }}
       shell: bash
     - uses: actions/upload-artifact@v4
       if: ${{ inputs.upload-artifact }}
@@ -85,5 +67,3 @@ runs:
           ~/.copilot/logs/
           ~/.copilot/trajectory.md
           /home/runner/.config/
-
-    
