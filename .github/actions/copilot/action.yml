@@ -45,13 +45,16 @@ runs:
       shell: bash
     - run: |
         mkdir -p $XDG_CONFIG_HOME/.copilot
-        
-        echo '${{ inputs.mcp-config }}' > $XDG_CONFIG_HOME/.copilot/mcp-config.json
+
+        echo '$MCP_CONFIG' > $XDG_CONFIG_HOME/.copilot/mcp-config.json
         cat $XDG_CONFIG_HOME/.copilot/mcp-config.json
 
         echo "$CONFIG" > $XDG_CONFIG_HOME/.copilot/config.json
         cat $XDG_CONFIG_HOME/.copilot/config.json
       shell: bash
+      env:
+        CONFIG: ${{ inputs.copilot-config }}
+        MCP_CONFIG: ${{ inputs.mcp-config }}
     - run: copilot -p "$PROMPT" --allow-all-tools --log-level "$LOG_LEVEL" --log-dir ~/.copilot/logs --save-trajectory-output ~/.copilot/trajectory.md
       id: copilot
       env:
