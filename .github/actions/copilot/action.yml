@@ -70,3 +70,5 @@ runs:
           ~/.copilot/logs/
           ~/.copilot/trajectory.md
           /home/runner/.config/
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v3
