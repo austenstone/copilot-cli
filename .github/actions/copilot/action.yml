@@ -35,7 +35,7 @@ runs:
             "args": ["-y", "actions-toolkit-mcp"],
             "tools": ["*"],
             "env": {
-              "GITHUB_STEP_SUMMARY": "'"$GITHUB_STEP_SUMMARY"'"
+              "GITHUB_STEP_SUMMARY": "${{ github.step_summary }}"
             }
           }
         }'
@@ -59,6 +59,6 @@ runs:
         path: |
           ~/.copilot/logs/
           ~/.copilot/trajectory.md
-          /home/runner/.config
+          /home/runner/.config/
     # - uses: mxschmitt/action-tmate@v3
     
