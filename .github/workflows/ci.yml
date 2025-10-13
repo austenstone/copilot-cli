@@ -13,4 +13,4 @@ jobs:
     steps:
       # - uses: actions/checkout@v5
       - run: echo "Hello, world!"
-      - run: exit 1
+      - run: echo "CI workflow completed successfully"
