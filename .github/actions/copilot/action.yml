@@ -35,12 +35,7 @@ runs:
             "args": ["-y", "actions-toolkit-mcp"],
             "tools": ["*"],
             "env": {
-              "GITHUB_ENV": "${{ env.GITHUB_ENV }}",
-              "GITHUB_PATH": "${{ env.GITHUB_PATH }}",
-              "GITHUB_OUTPUT": "${{ env.GITHUB_OUTPUT }}",
-              "GITHUB_STATE": "${{ env.GITHUB_STATE }}",
-              "GITHUB_STEP_SUMMARY": $GITHUB_STEP_SUMMARY,
-              "GITHUB_EVENT_PATH": "${{ env.GITHUB_EVENT_PATH }}"
+              "GITHUB_STEP_SUMMARY": "'"$GITHUB_STEP_SUMMARY"'"
             }
           }
         }'
@@ -49,7 +44,7 @@ runs:
         echo '${{ inputs.mcp-config }}' | jq --argjson toolkit "$ACTIONS_TOOLKIT_MCP" \
           '.mcpServers += $toolkit' > $XDG_CONFIG_HOME/.copilot/mcp-config.json
       env:
-        GITHUB_STEP_SUMMARY: ${{ env.GITHUB_STEP_SUMMARY }}
+        GITHUB_STEP_SUMMARY: ${{ github.step_summary }}
       shell: bash
     - run: copilot -p "$PROMPT" --allow-all-tools --log-level all --log-dir ~/.copilot/logs --save-trajectory-output ~/.copilot/trajectory.md
       id: copilot
