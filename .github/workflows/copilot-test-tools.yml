@@ -25,7 +25,7 @@ jobs:
               }
             }
           }' > $XDG_CONFIG_HOME/.copilot/mcp-config.json
-      - run: copilot -p "$PROMPT" --allow-all-tools --log-level all --log-dir ~/.copilot/logs
+      - run: copilot -p "$PROMPT" --allow-all-tools --log-level all --log-dir ~/.copilot/logs --save-trajectory-output ~/.copilot/trajectory.md
         id: copilot
         env:
           GH_TOKEN: ${{ secrets.PAT }}
@@ -36,6 +36,8 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: copilot-logs
-          path: ~/.copilot/logs/
+          path: |
+            ~/.copilot/logs/
+            ~/.copilot/trajectory.md
       # - uses: mxschmitt/action-tmate@v3
       
