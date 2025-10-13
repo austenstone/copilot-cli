@@ -24,7 +24,7 @@ inputs:
         "screen_reader": false,
         "theme": "auto",
         "trusted_folders": [
-          "/home/runner"
+          "/"
         ]
       }
   log-level:
@@ -70,5 +70,5 @@ runs:
           ~/.copilot/logs/
           ~/.copilot/trajectory.md
           /home/runner/.config/
-    - name: Setup tmate session
-      uses: mxschmitt/action-tmate@v3
+    # - name: Setup tmate session
+    #   uses: mxschmitt/action-tmate@v3
