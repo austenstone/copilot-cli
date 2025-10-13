@@ -1,0 +1,61 @@
+name: 'GitHub Copilot CLI'
+description: 'GitHub Copilot CLI wrapper'
+inputs:
+  github-token:
+    description: 'GitHub Personal Access Token with required permissions'
+    required: true
+  prompt:
+    description: 'Prompt to send to GitHub Copilot'
+    required: true
+  upload-artifact:
+    description: 'Upload artifact after running Copilot'
+    required: false
+    default: true
+  mcp-config:
+    description: 'MCP configuration for GitHub Copilot'
+    required: false
+    default: '{
+      "mcpServers": {
+        "actions-toolkit-mcp": {
+          "command": "npx",
+          "args": ["-y", "actions-toolkit-mcp"],
+          "tools": ["*"],
+          "env": {
+            "GITHUB_ENV": "${{ env.GITHUB_ENV }}",
+            "GITHUB_PATH": "${{ env.GITHUB_PATH }}",
+            "GITHUB_OUTPUT": "${{ env.GITHUB_OUTPUT }}",
+            "GITHUB_STATE": "${{ env.GITHUB_STATE }}",
+            "GITHUB_STEP_SUMMARY": "${{ env.GITHUB_STEP_SUMMARY }}",
+            "GITHUB_EVENT_PATH": "${{ env.GITHUB_EVENT_PATH }}"
+          }
+        }
+      }
+    }'
+runs:
+  using: 'composite'
+  steps:
+    - uses: actions/setup-node@v4
+      with:
+        node-version: '22'
+    - run: npm install -g @github/copilot
+      shell: bash
+    - run: |
+        mkdir -p $XDG_CONFIG_HOME/.copilot
+        echo '${{ inputs.mcp-config }}' > $XDG_CONFIG_HOME/.copilot/mcp-config.json
+      shell: bash
+    - run: copilot -p "$PROMPT" --allow-all-tools --log-level all --log-dir ~/.copilot/logs --save-trajectory-output ~/.copilot/trajectory.md
+      id: copilot
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
+        PROMPT: ${{ inputs.prompt }}
+      shell: bash
+    - uses: actions/upload-artifact@v4
+      if: ${{ inputs.upload-artifact }}
+      with:
+        name: copilot-logs
+        path: |
+          ~/.copilot/logs/
+          ${{ env.XDG_CONFIG_HOME }}/.copilot/
+          ~/.copilot/trajectory.md
+    # - uses: mxschmitt/action-tmate@v3
+    
