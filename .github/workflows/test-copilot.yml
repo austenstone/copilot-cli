@@ -9,8 +9,9 @@ jobs:
           github-token: ${{ secrets.PAT }}
           prompt: |
             First print the env variables.
-            
+
+            explore the runner and runner OS to understand the environment
+            Search /home/runner
+            explain files you find
+
             Create annotations and write a job summary using mcp tools.
-
-            If something fails try to understand why and suggest a fix.
-

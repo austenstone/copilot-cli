@@ -35,7 +35,12 @@ runs:
             "args": ["-y", "actions-toolkit-mcp"],
             "tools": ["*"],
             "env": {
-              "GITHUB_STEP_SUMMARY": "${GITHUB_STEP_SUMMARY}"
+              "GITHUB_STEP_SUMMARY": "${GITHUB_STEP_SUMMARY}",
+              "GITHUB_ENV": "${GITHUB_ENV}",
+              "RUNNER_DEBUG": "${RUNNER_DEBUG}",
+              "GITHUB_SERVER_URL": "${GITHUB_SERVER_URL}",
+              "GITHUB_REPOSITORY": "${GITHUB_REPOSITORY}",
+              "GITHUB_EVENT_PATH": "${GITHUB_EVENT_PATH}"
             }
           }
         }'
@@ -46,6 +51,11 @@ runs:
         cat $XDG_CONFIG_HOME/.copilot/mcp-config.json
       env:
         GITHUB_STEP_SUMMARY: ${{ github.step_summary }}
+        GITHUB_ENV: ${{ github.env }}
+        RUNNER_DEBUG: ${{ runner.debug }}
+        GITHUB_SERVER_URL: ${{ github.server_url }}
+        GITHUB_REPOSITORY: ${{ github.repository }}
+        GITHUB_EVENT_PATH: ${{ github.event_path }}
       shell: bash
     - run: |
         ls -al $XDG_CONFIG_HOME/.copilot
@@ -64,7 +74,6 @@ runs:
     - run: copilot -p "$PROMPT" --allow-all-tools --log-level all --log-dir ~/.copilot/logs --save-trajectory-output ~/.copilot/trajectory.md
       id: copilot
       env:
-        GITHUB_STEP_SUMMARY: ${{ github.step_summary }}
         GH_TOKEN: ${{ inputs.github-token }}
         PROMPT: ${{ inputs.prompt }}
       shell: bash
@@ -76,5 +85,5 @@ runs:
           ~/.copilot/logs/
           ~/.copilot/trajectory.md
           /home/runner/.config/
-    # - uses: mxschmitt/action-tmate@v3
+
     
