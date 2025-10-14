@@ -79,7 +79,7 @@ runs:
       run: |
         mkdir -p $XDG_CONFIG_HOME/.copilot
 
-        echo '$MCP_CONFIG' > $XDG_CONFIG_HOME/.copilot/mcp-config.json
+        echo "$MCP_CONFIG" > $XDG_CONFIG_HOME/.copilot/mcp-config.json
         cat $XDG_CONFIG_HOME/.copilot/mcp-config.json
 
         # Add current workspace to trusted folders
@@ -95,7 +95,7 @@ runs:
       id: copilot
       run: |
         gh auth status
-        
+
         set +e  # Don't exit on error
         
         COPILOT_CMD="copilot"
