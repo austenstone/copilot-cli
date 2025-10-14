@@ -5,11 +5,16 @@ jobs:
     if: ${{ startsWith(github.event.comment.body, '/copilot') }}
     runs-on: ubuntu-latest
     steps:
+      - name: Remove the /copilot
+        id: sanitize
+        run: |
+          modified_comment=$(echo "${{ github.event.comment.body }}" | sed 's/\/copilot//')
+          echo "prompt=${modified_comment}" >> "$GITHUB_OUTPUT"
       - uses: austenstone/copilot-cli-actions/.github/actions/copilot@main
         with:
           github-token: ${{ secrets.PAT }}
           prompt: |
-            ${{ github.event.comment.body }}
+            ${{ steps.sanitize.outputs.prompt }}
 
             At the start, acknowledge the issue comment by reacting with an emoji.
 
