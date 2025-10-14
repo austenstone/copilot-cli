@@ -94,6 +94,8 @@ runs:
     - name: Run Copilot CLI
       id: copilot
       run: |
+        gh auth status
+        
         set +e  # Don't exit on error
         
         COPILOT_CMD="copilot"
