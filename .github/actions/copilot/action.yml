@@ -83,13 +83,14 @@ runs:
         cat $XDG_CONFIG_HOME/.copilot/mcp-config.json
 
         # Add current workspace to trusted folders
-        CONFIG_WITH_TRUST=$(echo "$CONFIG" | jq --arg workspace "$GITHUB_WORKSPACE" '.trusted_folders += [$workspace]')
+        CONFIG_WITH_TRUST=$(echo "$CONFIG" | jq --arg workspace "$TEMP" '.trusted_folders += [$workspace]')
         echo "$CONFIG_WITH_TRUST" > $XDG_CONFIG_HOME/.copilot/config.json
         cat $XDG_CONFIG_HOME/.copilot/config.json
       shell: bash
       env:
         CONFIG: ${{ inputs.copilot-config }}
         MCP_CONFIG: ${{ inputs.mcp-config }}
+        TEMP: ${{ runner.temp }}
     - name: Run Copilot CLI
       id: copilot
       run: |
