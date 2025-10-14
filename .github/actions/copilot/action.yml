@@ -31,6 +31,14 @@ inputs:
     description: 'Log level for GitHub Copilot'
     required: false
     default: 'all'
+  allow-all-tools:
+    description: 'Allow all tools without approval (DANGEROUS - use with caution in untrusted environments)'
+    required: false
+    default: 'true'
+  denied-tools:
+    description: 'Comma-separated list of tools to deny (e.g., "shell(rm),shell(git push)")'
+    required: false
+    default: ''
   upload-artifact:
     description: 'Upload artifact after running Copilot'
     required: false
@@ -56,12 +64,33 @@ runs:
         CONFIG: ${{ inputs.copilot-config }}
         MCP_CONFIG: ${{ inputs.mcp-config }}
     - run: |
-        echo "$PROMPT" | copilot --allow-all-tools --log-level "$LOG_LEVEL" --log-dir ~/.copilot/logs --save-trajectory-output ~/.copilot/trajectory.md
+        COPILOT_CMD="copilot"
+        
+        # Add tool permissions
+        if [ "$ALLOW_ALL_TOOLS" = "true" ]; then
+          COPILOT_CMD="$COPILOT_CMD --allow-all-tools"
+        fi
+        
+        # Add denied tools
+        if [ -n "$DENIED_TOOLS" ]; then
+          IFS=',' read -ra TOOLS <<< "$DENIED_TOOLS"
+          for tool in "${TOOLS[@]}"; do
+            COPILOT_CMD="$COPILOT_CMD --deny-tool '$tool'"
+          done
+        fi
+        
+        # Add other options
+        COPILOT_CMD="$COPILOT_CMD --log-level $LOG_LEVEL --log-dir ~/.copilot/logs --save-trajectory-output ~/.copilot/trajectory.md"
+        
+        # Execute with prompt piped to stdin and close stdin after
+        echo "$PROMPT" | eval $COPILOT_CMD < /dev/null
       id: copilot
       env:
         GH_TOKEN: ${{ inputs.github-token }}
         PROMPT: ${{ inputs.prompt }}
         LOG_LEVEL: ${{ inputs.log-level }}
+        ALLOW_ALL_TOOLS: ${{ inputs.allow-all-tools }}
+        DENIED_TOOLS: ${{ inputs.denied-tools }}
       shell: bash
     - uses: actions/upload-artifact@v4
       if: ${{ inputs.upload-artifact }}
