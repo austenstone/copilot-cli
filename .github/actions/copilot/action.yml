@@ -52,12 +52,6 @@ outputs:
   logs-path:
     description: 'Path to the copilot logs directory'
     value: ${{ steps.copilot.outputs.logs_path }}
-  exit-code:
-    description: 'Exit code from the copilot command'
-    value: ${{ steps.copilot.outputs.exit_code }}
-  success:
-    description: 'Whether the copilot command succeeded'
-    value: ${{ steps.copilot.outputs.success }}
 runs:
   using: 'composite'
   steps:
@@ -79,10 +73,33 @@ runs:
       run: |
         mkdir -p $XDG_CONFIG_HOME/.copilot
 
-        echo "$MCP_CONFIG" > $XDG_CONFIG_HOME/.copilot/mcp-config.json
+        # Create base MCP config with default servers
+        BASE_MCP_CONFIG='{
+          "mcpServers": {
+            "github-mcp-server": {
+              "type": "http",
+              "url": "https://api.githubcopilot.com/mcp/readonly",
+              "headers": {
+                "Authorization": "Bearer '"$GH_TOKEN"'"
+              },
+              "tools": ["*"]
+            },
+            "blackbird-mcp-server": {
+              "type": "http",
+              "url": "https://api.githubcopilot.com/mcp/readonly",
+              "headers": {
+                "Authorization": "Bearer '"$GH_TOKEN"'"
+              },
+              "tools": ["*"]
+            }
+          }
+        }'
+
+        # Merge user-provided MCP config with base config
+        MERGED_MCP_CONFIG=$(echo "$BASE_MCP_CONFIG" | jq --argjson user "$MCP_CONFIG" '.mcpServers += $user.mcpServers')
+        echo "$MERGED_MCP_CONFIG" > $XDG_CONFIG_HOME/.copilot/mcp-config.json
         cat $XDG_CONFIG_HOME/.copilot/mcp-config.json
 
-        # Add current workspace to trusted folders
         CONFIG_WITH_TRUST=$(echo "$CONFIG" | jq --arg workspace "$TEMP" '.trusted_folders += [$workspace]')
         echo "$CONFIG_WITH_TRUST" > $XDG_CONFIG_HOME/.copilot/config.json
         cat $XDG_CONFIG_HOME/.copilot/config.json
@@ -91,6 +108,7 @@ runs:
         CONFIG: ${{ inputs.copilot-config }}
         MCP_CONFIG: ${{ inputs.mcp-config }}
         TEMP: ${{ runner.temp }}
+        GH_TOKEN: ${{ inputs.github-token }}
     - name: Run Copilot CLI
       id: copilot
       run: |
@@ -121,17 +139,7 @@ runs:
         # Set outputs
         echo "trajectory=$HOME/.copilot/trajectory.md" >> $GITHUB_OUTPUT
         echo "logs_path=$HOME/.copilot/logs" >> $GITHUB_OUTPUT
-        echo "exit_code=$EXIT_CODE" >> $GITHUB_OUTPUT
-        
-        if [ $EXIT_CODE -eq 0 ]; then
-          echo "success=true" >> $GITHUB_OUTPUT
-          echo "✅ Copilot completed successfully"
-        else
-          echo "success=false" >> $GITHUB_OUTPUT
-          echo "❌ Copilot failed with exit code: $EXIT_CODE"
-        fi
       env:
-        GITHUB_COPILOT_CLI_MODE: true
         GH_TOKEN: ${{ inputs.github-token }}
         PROMPT: ${{ inputs.prompt }}
         LOG_LEVEL: ${{ inputs.log-level }}

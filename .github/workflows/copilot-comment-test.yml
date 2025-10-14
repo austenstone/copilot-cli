@@ -1,0 +1,19 @@
+on: issue_comment
+
+jobs:
+  copilot:
+    if: ${{ startsWith(github.event.comment.body, '/copilot') }}
+    runs-on: ubuntu-latest
+    steps:
+      - run: copilot -p ${{ github.event.comment.body }} --allow-all-tools --log-level $LOG_LEVEL --log-dir ~/.copilot/logs --save-trajectory-output ~/.copilot/trajectory.md"
+        env:
+          GH_TOKEN: ${{ secrets.PAT }}
+      - uses: actions/upload-artifact@v4
+        if: ${{ always() }}
+        with:
+          name: copilot-logs-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ~/.copilot/logs/
+            ~/.copilot/trajectory.md
+            /home/runner/.config/
+          if-no-files-found: warn
