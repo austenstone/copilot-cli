@@ -112,7 +112,8 @@ runs:
         
         # Add other options
         COPILOT_CMD="$COPILOT_CMD --log-level $LOG_LEVEL --log-dir ~/.copilot/logs --save-trajectory-output ~/.copilot/trajectory.md"
-        echo "$PROMPT" | eval $COPILOT_CMD < /dev/null
+        echo "$PROMPT" | eval $COPILOT_CMD
+        EXIT_CODE=$?
         
         # Set outputs
         echo "trajectory=$HOME/.copilot/trajectory.md" >> $GITHUB_OUTPUT
