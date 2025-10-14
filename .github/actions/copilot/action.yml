@@ -131,6 +131,7 @@ runs:
           echo "❌ Copilot failed with exit code: $EXIT_CODE"
         fi
       env:
+        GITHUB_COPILOT_CLI_MODE: true
         GH_TOKEN: ${{ inputs.github-token }}
         PROMPT: ${{ inputs.prompt }}
         LOG_LEVEL: ${{ inputs.log-level }}
