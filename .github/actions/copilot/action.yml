@@ -23,9 +23,7 @@ inputs:
         "render_markdown": true,
         "screen_reader": false,
         "theme": "auto",
-        "trusted_folders": [
-          "/"
-        ]
+        "trusted_folders": []
       }
   log-level:
     description: 'Log level for GitHub Copilot'
@@ -39,31 +37,64 @@ inputs:
     description: 'Comma-separated list of tools to deny (e.g., "shell(rm),shell(git push)")'
     required: false
     default: ''
+  copilot-version:
+    description: 'Version of @github/copilot to install (e.g., "latest", "0.0.329")'
+    required: false
+    default: 'latest'
   upload-artifact:
     description: 'Upload artifact after running Copilot'
     required: false
     default: true
+outputs:
+  trajectory:
+    description: 'Path to the trajectory markdown file'
+    value: ${{ steps.copilot.outputs.trajectory }}
+  logs-path:
+    description: 'Path to the copilot logs directory'
+    value: ${{ steps.copilot.outputs.logs_path }}
+  exit-code:
+    description: 'Exit code from the copilot command'
+    value: ${{ steps.copilot.outputs.exit_code }}
+  success:
+    description: 'Whether the copilot command succeeded'
+    value: ${{ steps.copilot.outputs.success }}
 runs:
   using: 'composite'
   steps:
     - uses: actions/setup-node@v4
       with:
         node-version: '22'
-    - run: npm install -g @github/copilot
+    - name: Install GitHub Copilot CLI
+      run: |
+        if [ "$COPILOT_VERSION" = "latest" ]; then
+          npm install -g @github/copilot
+        else
+          npm install -g @github/copilot@$COPILOT_VERSION
+        fi
+        copilot --version || echo "Warning: Could not get copilot version"
       shell: bash
-    - run: |
+      env:
+        COPILOT_VERSION: ${{ inputs.copilot-version }}
+    - name: Configure Copilot
+      run: |
         mkdir -p $XDG_CONFIG_HOME/.copilot
 
         echo '$MCP_CONFIG' > $XDG_CONFIG_HOME/.copilot/mcp-config.json
         cat $XDG_CONFIG_HOME/.copilot/mcp-config.json
 
-        echo "$CONFIG" > $XDG_CONFIG_HOME/.copilot/config.json
+        # Add current workspace to trusted folders
+        CONFIG_WITH_TRUST=$(echo "$CONFIG" | jq --arg workspace "$GITHUB_WORKSPACE" '.trusted_folders += [$workspace]')
+        echo "$CONFIG_WITH_TRUST" > $XDG_CONFIG_HOME/.copilot/config.json
         cat $XDG_CONFIG_HOME/.copilot/config.json
       shell: bash
       env:
         CONFIG: ${{ inputs.copilot-config }}
         MCP_CONFIG: ${{ inputs.mcp-config }}
-    - run: |
+    - name: Run Copilot CLI
+      id: copilot
+      run: |
+        set +e  # Don't exit on error
+        
         COPILOT_CMD="copilot"
         
         # Add tool permissions
@@ -81,10 +112,20 @@ runs:
         
         # Add other options
         COPILOT_CMD="$COPILOT_CMD --log-level $LOG_LEVEL --log-dir ~/.copilot/logs --save-trajectory-output ~/.copilot/trajectory.md"
-        
-        # Execute with prompt piped to stdin and close stdin after
         echo "$PROMPT" | eval $COPILOT_CMD < /dev/null
-      id: copilot
+        
+        # Set outputs
+        echo "trajectory=$HOME/.copilot/trajectory.md" >> $GITHUB_OUTPUT
+        echo "logs_path=$HOME/.copilot/logs" >> $GITHUB_OUTPUT
+        echo "exit_code=$EXIT_CODE" >> $GITHUB_OUTPUT
+        
+        if [ $EXIT_CODE -eq 0 ]; then
+          echo "success=true" >> $GITHUB_OUTPUT
+          echo "✅ Copilot completed successfully"
+        else
+          echo "success=false" >> $GITHUB_OUTPUT
+          echo "❌ Copilot failed with exit code: $EXIT_CODE"
+        fi
       env:
         GH_TOKEN: ${{ inputs.github-token }}
         PROMPT: ${{ inputs.prompt }}
@@ -92,13 +133,15 @@ runs:
         ALLOW_ALL_TOOLS: ${{ inputs.allow-all-tools }}
         DENIED_TOOLS: ${{ inputs.denied-tools }}
       shell: bash
-    - uses: actions/upload-artifact@v4
-      if: ${{ inputs.upload-artifact }}
+    - name: Upload Copilot Artifacts
+      uses: actions/upload-artifact@v4
+      if: ${{ always() && inputs.upload-artifact == 'true' }}
       with:
-        name: copilot-logs
+        name: copilot-logs-${{ github.run_id }}-${{ github.run_attempt }}
         path: |
           ~/.copilot/logs/
           ~/.copilot/trajectory.md
           /home/runner/.config/
+        if-no-files-found: warn
     # - name: Setup tmate session
     #   uses: mxschmitt/action-tmate@v3
