@@ -8,7 +8,7 @@ jobs:
     steps:
       - uses: austenstone/copilot-cli-actions/.github/actions/copilot@main
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.PAT2 }}
           mcp-config: |
             {
               "mcpServers": {
