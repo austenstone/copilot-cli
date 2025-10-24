@@ -123,13 +123,20 @@ runs:
         echo "$MERGED_MCP_CONFIG" > $XDG_CONFIG_HOME/.copilot/mcp-config.json
         cat $XDG_CONFIG_HOME/.copilot/mcp-config.json
 
-        CONFIG_WITH_TRUST=$(echo "$CONFIG" | jq --arg workspace "$TEMP" '.trusted_folders += [$workspace]')
+        # Add common GitHub Actions paths to trusted folders for non-interactive access
+        CONFIG_WITH_TRUST=$(echo "$CONFIG" | jq \
+          --arg temp "$TEMP" \
+          --arg workspace "$GITHUB_WORKSPACE" \
+          --arg home "/home/runner" \
+          --arg etc "/etc" \
+          '.trusted_folders += [$temp, $workspace, $home, $etc]')
         echo "$CONFIG_WITH_TRUST" > $XDG_CONFIG_HOME/.copilot/config.json
         cat $XDG_CONFIG_HOME/.copilot/config.json
       env:
         CONFIG: ${{ inputs.copilot-config }}
         MCP_CONFIG: ${{ inputs.mcp-config }}
         TEMP: ${{ runner.temp }}
+        GITHUB_WORKSPACE: ${{ github.workspace }}
         GH_TOKEN: ${{ inputs.github-token }}
     - name: Run Copilot CLI
       id: copilot
