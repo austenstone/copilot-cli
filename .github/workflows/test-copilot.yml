@@ -9,21 +9,23 @@ jobs:
       - uses: austenstone/copilot-cli-actions/.github/actions/copilot@main
         with:
           github-token: ${{ secrets.PAT }}
-          mcp-config: |
-            {
-              "mcpServers": {
-                "time": {
-                  "command": "uvx",
-                  "args": [
-                    "mcp-server-time",
-                    "--local-timezone",
-                    "America/New_York"
-                  ],
-                  "tools": ["*"]
-                }
-              }
-            }
+          # mcp-config: |
+          #   {
+          #     "mcpServers": {
+          #       "time": {
+          #         "command": "uvx",
+          #         "args": [
+          #           "mcp-server-time",
+          #           "--local-timezone",
+          #           "America/New_York"
+          #         ],
+          #         "tools": ["*"]
+          #       }
+          #     }
+          #   }
           prompt: |
             Try to experiment with mcp tools available to see what they do and if they work.
 
-            Especially try the time tool to get the time.
+            List all tools.
+
+            Try the github mcp tools.
