@@ -141,10 +141,6 @@ runs:
         COPILOT_ARGS=(-p "$PROMPT")
 
         # Pre-trust common paths that Copilot might need in CI environment
-        COPILOT_ARGS+=(--add-dir "$GITHUB_WORKSPACE")
-        COPILOT_ARGS+=(--add-dir "$TEMP")
-        COPILOT_ARGS+=(--add-dir "/home/runner")
-        COPILOT_ARGS+=(--add-dir "/etc")
         COPILOT_ARGS+=(--add-dir "/")
         
         # Add additional trusted directories
