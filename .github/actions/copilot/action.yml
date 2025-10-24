@@ -100,9 +100,13 @@ runs:
       env:
         COPILOT_VERSION: ${{ inputs.copilot-version }}
     - name: Configure Copilot
+      id: configure
       shell: bash
       run: |
         mkdir -p $XDG_CONFIG_HOME/.copilot
+        
+        # Export config path for use in artifact upload
+        echo "path=$XDG_CONFIG_HOME/.copilot" >> $GITHUB_OUTPUT
 
         # Create base MCP config with GitHub MCP server (comes pre-configured by default)
         BASE_MCP_CONFIG='{
@@ -246,7 +250,7 @@ runs:
       with:
         name: copilot-logs-${{ github.run_id }}-${{ github.run_attempt }}
         path: |
-          ${{ env.HOME }}/.config/.copilot/
+          ${{ steps.configure.outputs.path }}/
           ${{ runner.temp }}/runtime-logs/
         if-no-files-found: warn
     # - name: Setup tmate session
