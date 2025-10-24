@@ -41,6 +41,10 @@ inputs:
     description: 'Version of @github/copilot to install (e.g., "latest", "0.0.329")'
     required: false
     default: 'latest'
+  model:
+    description: 'Model to use (e.g., "claude-sonnet-4.5", "claude-sonnet-4", "gpt-5")'
+    required: false
+    default: ''
   upload-artifact:
     description: 'Upload artifact after running Copilot'
     required: false
@@ -52,6 +56,9 @@ outputs:
   logs-path:
     description: 'Path to the copilot logs directory'
     value: ${{ steps.copilot.outputs.logs_path }}
+  exit-code:
+    description: 'Exit code from the Copilot CLI command'
+    value: ${{ steps.copilot.outputs.exit_code }}
 runs:
   using: 'composite'
   steps:
@@ -74,18 +81,10 @@ runs:
       run: |
         mkdir -p $XDG_CONFIG_HOME/.copilot
 
-        # Create base MCP config with default servers
+        # Create base MCP config with GitHub MCP server (comes pre-configured by default)
         BASE_MCP_CONFIG='{
           "mcpServers": {
             "github-mcp-server": {
-              "type": "http",
-              "url": "https://api.githubcopilot.com/mcp/readonly",
-              "headers": {
-                "Authorization": "Bearer '"$GH_TOKEN"'"
-              },
-              "tools": ["*"]
-            },
-            "blackbird-mcp-server": {
               "type": "http",
               "url": "https://api.githubcopilot.com/mcp/readonly",
               "headers": {
@@ -127,24 +126,32 @@ runs:
         if [ -n "$DENIED_TOOLS" ]; then
           IFS=',' read -ra TOOLS <<< "$DENIED_TOOLS"
           for tool in "${TOOLS[@]}"; do
-            COPILOT_CMD="$COPILOT_CMD --deny-tool '$tool'"
+            COPILOT_CMD="$COPILOT_CMD --deny-tool \"$tool\""
           done
         fi
         
+        # Add model selection if specified
+        if [ -n "$MODEL" ]; then
+          # Model will be set via /model command in the prompt
+          PROMPT="/model $MODEL\n$PROMPT"
+        fi
+        
         # Add other options
-        COPILOT_CMD="$COPILOT_CMD --log-level $LOG_LEVEL --log-dir ~/.copilot/logs --save-trajectory-output ~/.copilot/trajectory.md"
-        echo "$PROMPT" | eval $COPILOT_CMD
+        COPILOT_CMD="$COPILOT_CMD --log-level $LOG_LEVEL --log-dir $XDG_CONFIG_HOME/.copilot/logs --save-trajectory-output $XDG_CONFIG_HOME/.copilot/trajectory.md"
+        echo -e "$PROMPT" | eval $COPILOT_CMD
         EXIT_CODE=$?
         
         # Set outputs
-        echo "trajectory=$HOME/.copilot/trajectory.md" >> $GITHUB_OUTPUT
-        echo "logs_path=$HOME/.copilot/logs" >> $GITHUB_OUTPUT
+        echo "trajectory=$XDG_CONFIG_HOME/.copilot/trajectory.md" >> $GITHUB_OUTPUT
+        echo "logs_path=$XDG_CONFIG_HOME/.copilot/logs" >> $GITHUB_OUTPUT
+        echo "exit_code=$EXIT_CODE" >> $GITHUB_OUTPUT
       env:
         GH_TOKEN: ${{ inputs.github-token }}
         PROMPT: ${{ inputs.prompt }}
         LOG_LEVEL: ${{ inputs.log-level }}
         ALLOW_ALL_TOOLS: ${{ inputs.allow-all-tools }}
         DENIED_TOOLS: ${{ inputs.denied-tools }}
+        MODEL: ${{ inputs.model }}
       shell: bash
     - name: Upload Copilot Artifacts
       uses: actions/upload-artifact@v4
@@ -152,9 +159,9 @@ runs:
       with:
         name: copilot-logs-${{ github.run_id }}-${{ github.run_attempt }}
         path: |
-          /home/runner/.copilot/logs/
-          /home/runner/.copilot/trajectory.md
-          /home/runner/.config/
+          /home/runner/.config/.copilot/logs/
+          /home/runner/.config/.copilot/trajectory.md
+          /home/runner/.config/.copilot/
           ${{ runner.temp }}/runtime-logs/blocked.jsonl
           ${{ runner.temp }}/runtime-logs/blocked.md
         if-no-files-found: warn
