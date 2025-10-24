@@ -70,6 +70,7 @@ runs:
       env:
         COPILOT_VERSION: ${{ inputs.copilot-version }}
     - name: Configure Copilot
+      shell: bash
       run: |
         mkdir -p $XDG_CONFIG_HOME/.copilot
 
@@ -103,7 +104,6 @@ runs:
         CONFIG_WITH_TRUST=$(echo "$CONFIG" | jq --arg workspace "$TEMP" '.trusted_folders += [$workspace]')
         echo "$CONFIG_WITH_TRUST" > $XDG_CONFIG_HOME/.copilot/config.json
         cat $XDG_CONFIG_HOME/.copilot/config.json
-      shell: bash
       env:
         CONFIG: ${{ inputs.copilot-config }}
         MCP_CONFIG: ${{ inputs.mcp-config }}
@@ -152,9 +152,11 @@ runs:
       with:
         name: copilot-logs-${{ github.run_id }}-${{ github.run_attempt }}
         path: |
-          ~/.copilot/logs/
-          ~/.copilot/trajectory.md
+          /home/runner/.copilot/logs/
+          /home/runner/.copilot/trajectory.md
           /home/runner/.config/
+          ${{ runner.temp }}/runtime-logs/blocked.jsonl
+          ${{ runner.temp }}/runtime-logs/blocked.md
         if-no-files-found: warn
     # - name: Setup tmate session
     #   uses: mxschmitt/action-tmate@v3
