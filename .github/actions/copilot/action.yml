@@ -123,20 +123,12 @@ runs:
         echo "$MERGED_MCP_CONFIG" > $XDG_CONFIG_HOME/.copilot/mcp-config.json
         cat $XDG_CONFIG_HOME/.copilot/mcp-config.json
 
-        # Add common GitHub Actions paths to trusted folders for non-interactive access
-        CONFIG_WITH_TRUST=$(echo "$CONFIG" | jq \
-          --arg temp "$TEMP" \
-          --arg workspace "$GITHUB_WORKSPACE" \
-          --arg home "/home/runner" \
-          --arg etc "/etc" \
-          '.trusted_folders += [$temp, $workspace, $home, $etc]')
-        echo "$CONFIG_WITH_TRUST" > $XDG_CONFIG_HOME/.copilot/config.json
+        # Write user-provided config (trusted directories are set via --add-dir flags instead)
+        echo "$CONFIG" > $XDG_CONFIG_HOME/.copilot/config.json
         cat $XDG_CONFIG_HOME/.copilot/config.json
       env:
         CONFIG: ${{ inputs.copilot-config }}
         MCP_CONFIG: ${{ inputs.mcp-config }}
-        TEMP: ${{ runner.temp }}
-        GITHUB_WORKSPACE: ${{ github.workspace }}
         GH_TOKEN: ${{ inputs.github-token }}
     - name: Run Copilot CLI
       id: copilot
@@ -254,11 +246,8 @@ runs:
       with:
         name: copilot-logs-${{ github.run_id }}-${{ github.run_attempt }}
         path: |
-          /home/runner/.config/.copilot/logs/
-          /home/runner/.config/.copilot/trajectory.md
-          /home/runner/.config/.copilot/
-          ${{ runner.temp }}/runtime-logs/blocked.jsonl
-          ${{ runner.temp }}/runtime-logs/blocked.md
+          ~/.config/.copilot/
+          ${{ runner.temp }}/runtime-logs/
         if-no-files-found: warn
     # - name: Setup tmate session
     #   uses: mxschmitt/action-tmate@v3
