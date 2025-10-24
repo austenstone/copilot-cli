@@ -9,11 +9,21 @@ jobs:
       - uses: austenstone/copilot-cli-actions/.github/actions/copilot@main
         with:
           github-token: ${{ secrets.PAT }}
+          mcp-config: |
+            {
+              "mcpServers": {
+                "time": {
+                  "command": "uvx",
+                  "args": [
+                    "mcp-server-time",
+                    "--local-timezone",
+                    "America/New_York"
+                  ],
+                  "tools": ["*"]
+                }
+              }
+            }
           prompt: |
-            First print the env variables.
+            Try to experiment with mcp tools available to see what they do and if they work.
 
-            explore the runner and runner OS to understand the environment
-            Search /home/runner
-            explain files you find
-
-            Create annotations and write a job summary using mcp tools.
+            Especially try the time tool to get the time.

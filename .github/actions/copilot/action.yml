@@ -73,9 +73,9 @@ inputs:
     required: false
     default: true
 outputs:
-  trajectory:
+  trajectory-path:
     description: 'Path to the trajectory markdown file'
-    value: ${{ steps.copilot.outputs.trajectory }}
+    value: ${{ steps.copilot.outputs.trajectory_path }}
   logs-path:
     description: 'Path to the copilot logs directory'
     value: ${{ steps.copilot.outputs.logs_path }}
@@ -100,14 +100,10 @@ runs:
       env:
         COPILOT_VERSION: ${{ inputs.copilot-version }}
     - name: Configure Copilot
-      id: configure
       shell: bash
       run: |
         mkdir -p $XDG_CONFIG_HOME/.copilot
         
-        # Export config path for use in artifact upload
-        echo "path=$XDG_CONFIG_HOME/.copilot" >> $GITHUB_OUTPUT
-
         # Create base MCP config with GitHub MCP server (comes pre-configured by default)
         BASE_MCP_CONFIG='{
           "mcpServers": {
@@ -217,7 +213,7 @@ runs:
         # Debug: Show the full command being executed
         echo "========================================"
         echo "Executing Copilot CLI with arguments:"
-        printf '%s ' "${COPILOT_ARGS[@]}"
+        printf '%s\n' "${COPILOT_ARGS[@]}"
         echo "========================================"
         
         # Execute the command with array expansion for proper quoting
@@ -225,7 +221,7 @@ runs:
         EXIT_CODE=$?
         
         # Set outputs
-        echo "trajectory=$HOME/.copilot/trajectory.md" >> $GITHUB_OUTPUT
+        echo "trajectory_path=$HOME/.copilot/trajectory.md" >> $GITHUB_OUTPUT
         echo "logs_path=$HOME/.copilot/logs" >> $GITHUB_OUTPUT
         echo "exit_code=$EXIT_CODE" >> $GITHUB_OUTPUT
       env:
@@ -251,9 +247,7 @@ runs:
         name: copilot-logs-${{ github.run_id }}-${{ github.run_attempt }}
         path: |
           ${{ steps.copilot.outputs.logs_path }}
-          ${{ steps.copilot.outputs.trajectory }}
-          ${{ steps.configure.outputs.path }}/
-          ${{ runner.temp }}/runtime-logs/
+          ${{ steps.copilot.outputs.trajectory_path }}
         if-no-files-found: warn
     # - name: Setup tmate session
     #   uses: mxschmitt/action-tmate@v3
