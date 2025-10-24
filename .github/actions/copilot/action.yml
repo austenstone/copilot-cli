@@ -157,7 +157,7 @@ runs:
         if [ -n "$ADDITIONAL_DIRS" ]; then
           IFS=',' read -ra DIRS <<< "$ADDITIONAL_DIRS"
           for dir in "${DIRS[@]}"; do
-            COPILOT_CMD="$COPILOT_CMD --add-dir \"$dir\""
+            COPILOT_ARGS+=(--add-dir "$dir")
           done
         fi
         
@@ -165,50 +165,50 @@ runs:
         if [ -n "$DISABLE_MCP_SERVERS" ]; then
           IFS=',' read -ra SERVERS <<< "$DISABLE_MCP_SERVERS"
           for server in "${SERVERS[@]}"; do
-            COPILOT_CMD="$COPILOT_CMD --disable-mcp-server \"$server\""
+            COPILOT_ARGS+=(--disable-mcp-server "$server")
           done
         fi
         
         # Add tool permissions
         if [ "$ALLOW_ALL_TOOLS" = "true" ]; then
-          COPILOT_CMD="$COPILOT_CMD --allow-all-tools"
+          COPILOT_ARGS+=(--allow-all-tools)
         fi
         
         # Add denied tools
         if [ -n "$DENIED_TOOLS" ]; then
           IFS=',' read -ra TOOLS <<< "$DENIED_TOOLS"
           for tool in "${TOOLS[@]}"; do
-            COPILOT_CMD="$COPILOT_CMD --deny-tool \"$tool\""
+            COPILOT_ARGS+=(--deny-tool "$tool")
           done
         fi
         
         # Add model selection
         if [ -n "$MODEL" ]; then
-          COPILOT_CMD="$COPILOT_CMD --model \"$MODEL\""
+          COPILOT_ARGS+=(--model "$MODEL")
         fi
         
         # Add no-color flag for CI environments
         if [ "$NO_COLOR" = "true" ]; then
-          COPILOT_CMD="$COPILOT_CMD --no-color"
+          COPILOT_ARGS+=(--no-color)
         fi
         
         # Add screen reader optimizations
         if [ "$SCREEN_READER" = "true" ]; then
-          COPILOT_CMD="$COPILOT_CMD --screen-reader"
+          COPILOT_ARGS+=(--screen-reader)
         fi
         
         # Add resume session
         if [ -n "$RESUME_SESSION" ]; then
           if [ "$RESUME_SESSION" = "latest" ]; then
-            COPILOT_CMD="$COPILOT_CMD --continue"
+            COPILOT_ARGS+=(--continue)
           else
-            COPILOT_CMD="$COPILOT_CMD --resume \"$RESUME_SESSION\""
+            COPILOT_ARGS+=(--resume "$RESUME_SESSION")
           fi
         fi
         
         # Add banner flag
         if [ "$SHOW_BANNER" = "true" ]; then
-          COPILOT_CMD="$COPILOT_CMD --banner"
+          COPILOT_ARGS+=(--banner)
         fi
         
         # Build args array for safer execution with multi-line prompts
