@@ -253,5 +253,5 @@ runs:
           ${{ steps.configure.outputs.path }}/
           ${{ runner.temp }}/runtime-logs/
         if-no-files-found: warn
-    # - name: Setup tmate session
-    #   uses: mxschmitt/action-tmate@v3
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v3
