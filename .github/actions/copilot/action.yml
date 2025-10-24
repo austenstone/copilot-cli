@@ -147,6 +147,13 @@ runs:
         
         # Build args array for safer execution with multi-line prompts
         COPILOT_ARGS=(-p "$PROMPT")
+        
+        # Pre-trust common paths that Copilot might need in CI environment
+        COPILOT_ARGS+=(--add-dir "$GITHUB_WORKSPACE")
+        COPILOT_ARGS+=(--add-dir "$TEMP")
+        COPILOT_ARGS+=(--add-dir "/home/runner")
+        COPILOT_ARGS+=(--add-dir "/etc")
+        COPILOT_ARGS+=(--add-dir "/")
         if [ -n "$ADDITIONAL_DIRS" ]; then
           IFS=',' read -ra DIRS <<< "$ADDITIONAL_DIRS"
           for dir in "${DIRS[@]}"; do
@@ -270,6 +277,12 @@ runs:
         COPILOT_ARGS+=(--log-dir "$XDG_CONFIG_HOME/.copilot/logs")
         COPILOT_ARGS+=(--save-trajectory-output "$XDG_CONFIG_HOME/.copilot/trajectory.md")
         
+        # Debug: Show the full command being executed
+        echo "========================================"
+        echo "Executing Copilot CLI with arguments:"
+        printf '%s\n' "${COPILOT_ARGS[@]}"
+        echo "========================================"
+        
         # Execute the command with array expansion for proper quoting
         copilot "${COPILOT_ARGS[@]}"
         EXIT_CODE=$?
@@ -291,6 +304,8 @@ runs:
         SCREEN_READER: ${{ inputs.screen-reader }}
         RESUME_SESSION: ${{ inputs.resume-session }}
         SHOW_BANNER: ${{ inputs.show-banner }}
+        TEMP: ${{ runner.temp }}
+        GITHUB_WORKSPACE: ${{ github.workspace }}
       shell: bash
     - name: Upload Copilot Artifacts
       uses: actions/upload-artifact@v4
