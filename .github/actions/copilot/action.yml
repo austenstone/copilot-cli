@@ -246,7 +246,7 @@ runs:
       with:
         name: copilot-logs-${{ github.run_id }}-${{ github.run_attempt }}
         path: |
-          ~/.config/.copilot/
+          ${{ env.HOME }}/.config/.copilot/
           ${{ runner.temp }}/runtime-logs/
         if-no-files-found: warn
     # - name: Setup tmate session
