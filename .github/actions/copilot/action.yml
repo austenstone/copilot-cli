@@ -211,13 +211,13 @@ runs:
         
         # Add other options
         COPILOT_ARGS+=(--log-level "$LOG_LEVEL")
-        COPILOT_ARGS+=(--log-dir "$XDG_CONFIG_HOME/.copilot/logs")
-        COPILOT_ARGS+=(--save-trajectory-output "$XDG_CONFIG_HOME/.copilot/trajectory.md")
+        COPILOT_ARGS+=(--log-dir "$HOME/.copilot/logs")
+        COPILOT_ARGS+=(--save-trajectory-output "$HOME/.copilot/trajectory.md")
         
         # Debug: Show the full command being executed
         echo "========================================"
         echo "Executing Copilot CLI with arguments:"
-        printf '%s\n' "${COPILOT_ARGS[@]}"
+        printf '%s ' "${COPILOT_ARGS[@]}"
         echo "========================================"
         
         # Execute the command with array expansion for proper quoting
@@ -225,8 +225,8 @@ runs:
         EXIT_CODE=$?
         
         # Set outputs
-        echo "trajectory=$XDG_CONFIG_HOME/.copilot/trajectory.md" >> $GITHUB_OUTPUT
-        echo "logs_path=$XDG_CONFIG_HOME/.copilot/logs" >> $GITHUB_OUTPUT
+        echo "trajectory=$HOME/.copilot/trajectory.md" >> $GITHUB_OUTPUT
+        echo "logs_path=$HOME/.copilot/logs" >> $GITHUB_OUTPUT
         echo "exit_code=$EXIT_CODE" >> $GITHUB_OUTPUT
       env:
         GH_TOKEN: ${{ inputs.github-token }}
@@ -250,8 +250,10 @@ runs:
       with:
         name: copilot-logs-${{ github.run_id }}-${{ github.run_attempt }}
         path: |
+          ${{ steps.copilot.outputs.logs_path }}
+          ${{ steps.copilot.outputs.trajectory }}
           ${{ steps.configure.outputs.path }}/
           ${{ runner.temp }}/runtime-logs/
         if-no-files-found: warn
-    - name: Setup tmate session
-      uses: mxschmitt/action-tmate@v3
+    # - name: Setup tmate session
+    #   uses: mxschmitt/action-tmate@v3
