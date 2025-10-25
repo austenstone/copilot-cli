@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Color Palette Generator - Tests</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1a1a1a;
+            color: #fff;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .test-suite {
+            background: #2a2a2a;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .test-suite h2 {
+            margin-top: 0;
+            border-bottom: 2px solid #444;
+            padding-bottom: 10px;
+        }
+        .test-case {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            background: #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .test-case.pass {
+            border-left: 4px solid #4CAF50;
+        }
+        .test-case.fail {
+            border-left: 4px solid #f44336;
+        }
+        .test-case.pending {
+            border-left: 4px solid #FFC107;
+        }
+        .status {
+            font-weight: bold;
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-size: 0.9rem;
+        }
+        .status.pass {
+            background: #4CAF50;
+        }
+        .status.fail {
+            background: #f44336;
+        }
+        .status.pending {
+            background: #FFC107;
+            color: #000;
+        }
+        .test-name {
+            flex: 1;
+        }
+        .test-details {
+            font-size: 0.85rem;
+            color: #aaa;
+            margin-top: 5px;
+        }
+        .summary {
+            background: #2a2a2a;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .summary-stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        .stat {
+            padding: 10px 20px;
+            border-radius: 5px;
+            background: #333;
+        }
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            display: block;
+        }
+        .stat-label {
+            font-size: 0.9rem;
+            color: #aaa;
+        }
+        .error-message {
+            color: #ff5252;
+            font-size: 0.85rem;
+            margin-top: 5px;
+            font-family: monospace;
+        }
+        #run-tests {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            display: block;
+            margin: 20px auto;
+        }
+        #run-tests:hover {
+            background: #5568d3;
+        }
+    </style>
+</head>
+<body>
+    <h1>✨ Color Palette Generator - Test Suite</h1>
+    
+    <div class="summary" id="summary">
+        <h2>Test Summary</h2>
+        <div class="summary-stats">
+            <div class="stat">
+                <span class="stat-value" id="total-tests">0</span>
+                <span class="stat-label">Total Tests</span>
+            </div>
+            <div class="stat">
+                <span class="stat-value" style="color: #4CAF50;" id="passed-tests">0</span>
+                <span class="stat-label">Passed</span>
+            </div>
+            <div class="stat">
+                <span class="stat-value" style="color: #f44336;" id="failed-tests">0</span>
+                <span class="stat-label">Failed</span>
+            </div>
+            <div class="stat">
+                <span class="stat-value" id="duration">0ms</span>
+                <span class="stat-label">Duration</span>
+            </div>
+        </div>
+    </div>
+
+    <button id="run-tests">▶ Run All Tests</button>
+
+    <div id="test-results"></div>
+
+    <script>
+        // Test framework
+        class TestRunner {
+            constructor() {
+                this.suites = [];
+                this.results = {
+                    total: 0,
+                    passed: 0,
+                    failed: 0,
+                    duration: 0
+                };
+            }
+
+            suite(name, callback) {
+                const suite = {
+                    name,
+                    tests: [],
+                    beforeEach: null,
+                    afterEach: null
+                };
+                this.suites.push(suite);
+                
+                const context = {
+                    test: (testName, testFn) => {
+                        suite.tests.push({ name: testName, fn: testFn });
+                    },
+                    beforeEach: (fn) => {
+                        suite.beforeEach = fn;
+                    },
+                    afterEach: (fn) => {
+                        suite.afterEach = fn;
+                    }
+                };
+                
+                callback(context);
+            }
+
+            async run() {
+                const startTime = performance.now();
+                const resultsDiv = document.getElementById('test-results');
+                resultsDiv.innerHTML = '';
+                
+                this.results = { total: 0, passed: 0, failed: 0, duration: 0 };
+
+                for (const suite of this.suites) {
+                    const suiteDiv = document.createElement('div');
+                    suiteDiv.className = 'test-suite';
+                    suiteDiv.innerHTML = `<h2>${suite.name}</h2>`;
+                    resultsDiv.appendChild(suiteDiv);
+
+                    for (const test of suite.tests) {
+                        this.results.total++;
+                        const testDiv = document.createElement('div');
+                        testDiv.className = 'test-case pending';
+                        
+                        try {
+                            if (suite.beforeEach) await suite.beforeEach();
+                            
+                            await test.fn();
+                            
+                            if (suite.afterEach) await suite.afterEach();
+                            
+                            testDiv.className = 'test-case pass';
+                            testDiv.innerHTML = `
+                                <span class="status pass">✓ PASS</span>
+                                <span class="test-name">${test.name}</span>
+                            `;
+                            this.results.passed++;
+                        } catch (error) {
+                            testDiv.className = 'test-case fail';
+                            testDiv.innerHTML = `
+                                <span class="status fail">✗ FAIL</span>
+                                <span class="test-name">
+                                    ${test.name}
+                                    <div class="error-message">${error.message}</div>
+                                </span>
+                            `;
+                            this.results.failed++;
+                        }
+                        
+                        suiteDiv.appendChild(testDiv);
+                    }
+                }
+
+                this.results.duration = Math.round(performance.now() - startTime);
+                this.updateSummary();
+            }
+
+            updateSummary() {
+                document.getElementById('total-tests').textContent = this.results.total;
+                document.getElementById('passed-tests').textContent = this.results.passed;
+                document.getElementById('failed-tests').textContent = this.results.failed;
+                document.getElementById('duration').textContent = this.results.duration + 'ms';
+            }
+        }
+
+        // Assertion helpers
+        const assert = {
+            equals: (actual, expected, message = '') => {
+                if (actual !== expected) {
+                    throw new Error(`${message}\nExpected: ${expected}\nActual: ${actual}`);
+                }
+            },
+            true: (value, message = 'Expected true') => {
+                if (value !== true) {
+                    throw new Error(`${message}\nActual: ${value}`);
+                }
+            },
+            false: (value, message = 'Expected false') => {
+                if (value !== false) {
+                    throw new Error(`${message}\nActual: ${value}`);
+                }
+            },
+            exists: (value, message = 'Expected value to exist') => {
+                if (value === null || value === undefined) {
+                    throw new Error(message);
+                }
+            },
+            isType: (value, type, message = '') => {
+                if (typeof value !== type) {
+                    throw new Error(`${message}\nExpected type: ${type}\nActual type: ${typeof value}`);
+                }
+            },
+            matches: (value, regex, message = '') => {
+                if (!regex.test(value)) {
+                    throw new Error(`${message}\nValue "${value}" does not match pattern ${regex}`);
+                }
+            },
+            greaterThan: (actual, expected, message = '') => {
+                if (actual <= expected) {
+                    throw new Error(`${message}\nExpected ${actual} to be greater than ${expected}`);
+                }
+            },
+            arrayLength: (array, length, message = '') => {
+                if (!Array.isArray(array)) {
+                    throw new Error('Expected an array');
+                }
+                if (array.length !== length) {
+                    throw new Error(`${message}\nExpected length: ${length}\nActual length: ${array.length}`);
+                }
+            },
+            includes: (container, value, message = '') => {
+                if (Array.isArray(container)) {
+                    if (!container.includes(value)) {
+                        throw new Error(`${message}\nArray does not include: ${value}`);
+                    }
+                } else if (typeof container === 'string') {
+                    if (!container.includes(value)) {
+                        throw new Error(`${message}\nString does not include: ${value}`);
+                    }
+                }
+            }
+        };
+
+        // Load the app in an iframe for testing
+        function loadApp() {
+            return new Promise((resolve) => {
+                const iframe = document.createElement('iframe');
+                iframe.src = '../index.html';
+                iframe.style.display = 'none';
+                document.body.appendChild(iframe);
+                
+                iframe.onload = () => {
+                    resolve(iframe.contentWindow);
+                };
+            });
+        }
+
+        // Initialize test runner
+        const runner = new TestRunner();
+
+        // Test Suite 1: Color Generation Functions
+        runner.suite('Color Generation', ({ test }) => {
+            let appWindow;
+
+            test('randomColor generates valid hex color', async () => {
+                appWindow = await loadApp();
+                const color = appWindow.randomColor();
+                
+                assert.isType(color, 'string', 'Color should be a string');
+                assert.matches(color, /^#[0-9a-f]{6}$/i, 'Color should be valid hex format');
+            });
+
+            test('randomColor generates different colors', async () => {
+                appWindow = await loadApp();
+                const colors = new Set();
+                for (let i = 0; i < 10; i++) {
+                    colors.add(appWindow.randomColor());
+                }
+                assert.greaterThan(colors.size, 1, 'Should generate different colors');
+            });
+
+            test('randomColorName returns valid name', async () => {
+                appWindow = await loadApp();
+                const name = appWindow.randomColorName();
+                
+                assert.isType(name, 'string', 'Color name should be a string');
+                assert.greaterThan(name.length, 0, 'Color name should not be empty');
+            });
+        });
+
+        // Test Suite 2: Palette Generation
+        runner.suite('Palette Generation', ({ test }) => {
+            let appWindow;
+
+            test('generatePalette creates 5 colors', async () => {
+                appWindow = await loadApp();
+                appWindow.generatePalette();
+                
+                assert.arrayLength(appWindow.currentPalette, 5, 'Should generate 5 colors');
+            });
+
+            test('each palette color has hex and name', async () => {
+                appWindow = await loadApp();
+                appWindow.generatePalette();
+                
+                appWindow.currentPalette.forEach((color, index) => {
+                    assert.exists(color.hex, `Color ${index} should have hex property`);
+                    assert.exists(color.name, `Color ${index} should have name property`);
+                    assert.matches(color.hex, /^#[0-9a-f]{6}$/i, `Color ${index} hex should be valid`);
+                });
+            });
+
+            test('generatePalette creates DOM elements', async () => {
+                appWindow = await loadApp();
+                appWindow.generatePalette();
+                
+                const grid = appWindow.document.getElementById('paletteGrid');
+                const cards = grid.querySelectorAll('.color-card');
+                
+                assert.equals(cards.length, 5, 'Should create 5 color cards in DOM');
+            });
+
+            test('color cards display hex codes', async () => {
+                appWindow = await loadApp();
+                appWindow.generatePalette();
+                
+                const grid = appWindow.document.getElementById('paletteGrid');
+                const hexCodes = grid.querySelectorAll('.color-code');
+                
+                hexCodes.forEach((hexCode) => {
+                    assert.matches(hexCode.textContent, /^#[0-9A-F]{6}$/, 'Hex code should be uppercase and valid');
+                });
+            });
+        });
+
+        // Test Suite 3: Lock Functionality
+        runner.suite('Color Locking', ({ test }) => {
+            let appWindow;
+
+            test('toggleLock adds color to locked set', async () => {
+                appWindow = await loadApp();
+                appWindow.generatePalette();
+                
+                const initialLocked = appWindow.lockedColors.size;
+                const mockEvent = { stopPropagation: () => {} };
+                appWindow.toggleLock(0, mockEvent);
+                
+                assert.equals(appWindow.lockedColors.size, initialLocked + 1, 'Should add color to locked set');
+                assert.true(appWindow.lockedColors.has(0), 'Should lock color at index 0');
+            });
+
+            test('toggleLock removes locked color', async () => {
+                appWindow = await loadApp();
+                appWindow.generatePalette();
+                
+                const mockEvent = { stopPropagation: () => {} };
+                appWindow.toggleLock(0, mockEvent);
+                appWindow.toggleLock(0, mockEvent);
+                
+                assert.false(appWindow.lockedColors.has(0), 'Should unlock color at index 0');
+            });
+
+            test('locked colors persist across generations', async () => {
+                appWindow = await loadApp();
+                appWindow.generatePalette();
+                
+                const colorToLock = appWindow.currentPalette[2].hex;
+                const mockEvent = { stopPropagation: () => {} };
+                appWindow.toggleLock(2, mockEvent);
+                
+                appWindow.generatePalette();
+                
+                assert.equals(appWindow.currentPalette[2].hex, colorToLock, 'Locked color should remain the same');
+            });
+        });
+
+        // Test Suite 4: LocalStorage Functions
+        runner.suite('Palette Storage', ({ test }) => {
+            let appWindow;
+
+            test('savePalette stores to localStorage', async () => {
+                appWindow = await loadApp();
+                appWindow.localStorage.clear();
+                appWindow.generatePalette();
+                appWindow.savePalette();
+                
+                const saved = JSON.parse(appWindow.localStorage.getItem('savedPalettes'));
+                assert.exists(saved, 'Should save to localStorage');
+                assert.equals(saved.length, 1, 'Should have one saved palette');
+            });
+
+            test('saved palette contains 5 colors', async () => {
+                appWindow = await loadApp();
+                appWindow.localStorage.clear();
+                appWindow.generatePalette();
+                appWindow.savePalette();
+                
+                const saved = JSON.parse(appWindow.localStorage.getItem('savedPalettes'));
+                assert.arrayLength(saved[0].colors, 5, 'Saved palette should have 5 colors');
+            });
+
+            test('loadPalette restores saved colors', async () => {
+                appWindow = await loadApp();
+                appWindow.localStorage.clear();
+                appWindow.generatePalette();
+                
+                const originalColors = appWindow.currentPalette.map(c => c.hex);
+                appWindow.savePalette();
+                
+                appWindow.generatePalette(); // Generate new palette
+                appWindow.loadPalette(0); // Load first saved palette
+                
+                const loadedColors = appWindow.currentPalette.map(c => c.hex);
+                
+                for (let i = 0; i < 5; i++) {
+                    assert.equals(loadedColors[i], originalColors[i], `Color ${i} should match original`);
+                }
+            });
+
+            test('clearSaved removes all palettes', async () => {
+                appWindow = await loadApp();
+                appWindow.localStorage.clear();
+                appWindow.generatePalette();
+                appWindow.savePalette();
+                appWindow.savePalette();
+                
+                // Mock confirm to always return true
+                appWindow.confirm = () => true;
+                appWindow.clearSaved();
+                
+                const saved = appWindow.localStorage.getItem('savedPalettes');
+                assert.equals(saved, null, 'localStorage should be cleared');
+            });
+        });
+
+        // Test Suite 5: UI Interactions
+        runner.suite('UI Interactions', ({ test }) => {
+            let appWindow;
+
+            test('copy indicator shows on copy', async () => {
+                appWindow = await loadApp();
+                
+                const indicator = appWindow.document.getElementById('copyIndicator');
+                appWindow.showCopyIndicator();
+                
+                assert.true(indicator.classList.contains('show'), 'Indicator should have show class');
+            });
+
+            test('saved palettes display shows when palettes exist', async () => {
+                appWindow = await loadApp();
+                appWindow.localStorage.clear();
+                appWindow.generatePalette();
+                appWindow.savePalette();
+                
+                const container = appWindow.document.getElementById('savedPalettes');
+                assert.equals(container.style.display, 'block', 'Saved palettes section should be visible');
+            });
+
+            test('saved palettes display hides when empty', async () => {
+                appWindow = await loadApp();
+                appWindow.localStorage.clear();
+                appWindow.displaySavedPalettes();
+                
+                const container = appWindow.document.getElementById('savedPalettes');
+                assert.equals(container.style.display, 'none', 'Saved palettes section should be hidden');
+            });
+
+            test('lock icon changes when locked', async () => {
+                appWindow = await loadApp();
+                appWindow.generatePalette();
+                
+                const mockEvent = { stopPropagation: () => {} };
+                appWindow.toggleLock(0, mockEvent);
+                
+                const grid = appWindow.document.getElementById('paletteGrid');
+                const lockIcon = grid.querySelectorAll('.lock-icon')[0];
+                
+                assert.true(lockIcon.classList.contains('locked'), 'Lock icon should have locked class');
+                assert.includes(lockIcon.textContent, '🔒', 'Should show locked emoji');
+            });
+        });
+
+        // Test Suite 6: Hex Color Validation
+        runner.suite('Hex Color Validation', ({ test }) => {
+            let appWindow;
+
+            test('hex colors are in correct range', async () => {
+                appWindow = await loadApp();
+                
+                for (let i = 0; i < 20; i++) {
+                    const color = appWindow.randomColor();
+                    const hexValue = parseInt(color.substring(1), 16);
+                    
+                    assert.greaterThan(hexValue, -1, 'Hex value should be >= 0');
+                    assert.true(hexValue <= 0xFFFFFF, 'Hex value should be <= 0xFFFFFF');
+                }
+            });
+
+            test('hex colors are properly padded', async () => {
+                appWindow = await loadApp();
+                
+                for (let i = 0; i < 20; i++) {
+                    const color = appWindow.randomColor();
+                    assert.equals(color.length, 7, 'Hex color should be 7 characters (#XXXXXX)');
+                }
+            });
+        });
+
+        // Run tests when button clicked
+        document.getElementById('run-tests').addEventListener('click', () => {
+            runner.run();
+        });
+
+        // Auto-run tests on load
+        window.addEventListener('load', () => {
+            setTimeout(() => runner.run(), 500);
+        });
+    </script>
+</body>
+</html>
