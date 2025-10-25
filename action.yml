@@ -126,8 +126,7 @@ runs:
               "type": "http",
               "url": "https://api.githubcopilot.com/mcp/readonly",
               "headers": {
-                "Authorization": "Bearer '$GH_TOKEN'",
-                "X-MCP-Toolsets": "all"
+                "Authorization": "Bearer '$GH_TOKEN'"
               },
               "tools": ["*"]
             }
