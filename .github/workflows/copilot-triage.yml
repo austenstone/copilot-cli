@@ -26,9 +26,6 @@ jobs:
         id: get_labels
         uses: 'actions/github-script@main'
         with:
-          # NOTE: we intentionally do not use the given token. The default
-          # GITHUB_TOKEN provided by the action has enough permissions to read
-          # the labels.
           script: |-
             const { data: labels } = await github.rest.issues.listLabelsForRepo({
               owner: context.repo.owner,

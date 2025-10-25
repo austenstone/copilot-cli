@@ -20,5 +20,8 @@ jobs:
             At the start, acknowledge the issue comment by reacting with an emoji.
 
             Once you have completed your task, please summarize the outcome and any relevant details by responding to the comment.
-            
 
+            ## Input Data
+            ```json
+            ${{ toJson(github.event) }}
+            ```
