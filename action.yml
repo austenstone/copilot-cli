@@ -72,6 +72,10 @@ inputs:
     description: 'Upload artifact after running Copilot'
     required: false
     default: true
+  cache-cli:
+    description: 'Enable caching for npm packages'
+    required: false
+    default: 'false'
 outputs:
   trajectory-path:
     description: 'Path to the trajectory markdown file'
@@ -90,6 +94,7 @@ runs:
         node-version: '22'
     - name: Cache Copilot CLI
       uses: actions/cache@v4
+      if: ${{ inputs.cache-cli == 'true' }}
       with:
         path: ~/.npm
         key: ${{ runner.os }}-copilot-cli-${{ inputs.copilot-version }}
