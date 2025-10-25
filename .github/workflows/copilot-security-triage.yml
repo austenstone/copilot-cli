@@ -155,70 +155,88 @@ jobs:
 
             ---
 
-            ## � Executive Summary
+            ## 📊 Executive Summary
 
             [2-3 sentences summarizing the overall security posture, number of critical issues, and immediate actions required]
 
             ---
 
-            ## 🔴 Critical Priority Alerts (Immediate Action Required)
+            ## 🔑 Secret Scanning Alerts
 
-            [For each critical alert, provide:]
+            [For each secret scanning alert, provide:]
 
-            ### Alert #[Number]: [Alert Title/Type]
-            - **Type:** [Dependabot / Secret Scanning / Code Scanning]
+            ### Alert #[Number]: [Alert Title/Secret Type]
+            - **Priority:** [🔴 Critical / 🟠 High / 🟡 Medium / 🟢 Low]
             - **Severity:** [Critical/High/Medium/Low]
-            - **Disposition:** [True Positive / False Positive / Informational]
-            - **Affected Asset:** [File path, dependency name, or secret type]
-            - **Branch/Location:** [main, dev, etc.]
-            - **Risk Assessment:** [Why this is critical - business impact, exploit potential, data exposure risk]
-            - **Recommended Action:** [Specific steps: revoke secret, update dependency to version X, patch code at line Y]
-            - **Assigned To:** [Team/Individual - if determinable from context]
+            - **Disposition:** [✅ True Positive / ❌ False Positive / ℹ️ Informational]
+            - **Secret Type:** [API Key, Token, Password, etc.]
+            - **Location:** [File path and line number]
+            - **Branch:** [main, dev, etc.]
+            - **Risk Assessment:** [Why this is critical - is secret active, scope of access, data exposure risk]
+            - **Recommended Action:** [Revoke secret immediately, rotate credentials, dismiss if false positive]
             - **Alert URL:** [Direct link to the alert]
 
-            ---
-
-            ## 🟠 High Priority Alerts (Address Before Next Release)
-
-            [Same structure as Critical, but for High priority items]
+            [If no secret scanning alerts exist, state: "No secret scanning alerts found."]
 
             ---
 
-            ## 🟡 Medium Priority Alerts (Schedule for Resolution)
+            ## 🤖 Dependabot Alerts
 
-            [Same structure, but can be more concise for Medium priority]
+            [For each Dependabot alert, provide:]
+
+            ### Alert #[Number]: [Package Name - Vulnerability Title]
+            - **Priority:** [🔴 Critical / 🟠 High / 🟡 Medium / 🟢 Low]
+            - **Severity:** [Critical/High/Medium/Low]
+            - **Disposition:** [✅ True Positive / ❌ False Positive / ℹ️ Informational]
+            - **Package:** [Package name and current version]
+            - **Vulnerable Version Range:** [Affected versions]
+            - **Patched Version:** [Recommended upgrade version]
+            - **Dependency Type:** [Production / Development / Test]
+            - **Risk Assessment:** [Is dependency used in production, exploit potential, impact if exploited]
+            - **Recommended Action:** [Update to version X, remove if unused, dismiss if not applicable]
+            - **Alert URL:** [Direct link to the alert]
+
+            [If no Dependabot alerts exist, state: "No Dependabot alerts found."]
 
             ---
 
-            ## 🟢 Low Priority Alerts (Monitor or Dismiss)
+            ## 🔍 Code Scanning Alerts
 
-            [Brief list with minimal detail - can be a table]
+            [For each code scanning alert, provide:]
 
-            | Alert Type | Severity | Description | Recommendation |
-            |------------|----------|-------------|----------------|
-            | [Type] | [Severity] | [Brief description] | [Dismiss / Monitor / Fix when convenient] |
+            ### Alert #[Number]: [Rule Name / CWE]
+            - **Priority:** [🔴 Critical / 🟠 High / 🟡 Medium / 🟢 Low]
+            - **Severity:** [Critical/High/Medium/Low]
+            - **Disposition:** [✅ True Positive / ❌ False Positive / ℹ️ Informational]
+            - **Rule:** [Rule ID and description]
+            - **Location:** [File path and line number]
+            - **Branch:** [main, dev, etc.]
+            - **Code Context:** [Brief description of vulnerable code]
+            - **Risk Assessment:** [Is code reachable, exploit potential, production vs. test code]
+            - **Recommended Action:** [Fix code at line X, refactor function Y, dismiss if test code]
+            - **Alert URL:** [Direct link to the alert]
 
-            ---
-
-            ## ❌ False Positives Identified
-
-            [List alerts that should be dismissed with justification]
-
-            - **Alert:** [Description]
-              - **Reason for False Positive:** [Clear explanation]
-              - **Action:** Recommend dismissal
+            [If no code scanning alerts exist, state: "No code scanning alerts found."]
 
             ---
 
             ## 📋 Summary Statistics
 
-            - **Total Alerts:** [Count]
+            **By Alert Type:**
+            - **Secret Scanning:** [Count] ([Critical/High/Medium/Low breakdown])
+            - **Dependabot:** [Count] ([Critical/High/Medium/Low breakdown])
+            - **Code Scanning:** [Count] ([Critical/High/Medium/Low breakdown])
+
+            **By Priority:**
             - **Critical (🔴):** [Count]
             - **High (🟠):** [Count]
             - **Medium (🟡):** [Count]
             - **Low (🟢):** [Count]
-            - **False Positives (❌):** [Count]
+
+            **By Disposition:**
             - **True Positives (✅):** [Count]
+            - **False Positives (❌):** [Count]
+            - **Informational (ℹ️):** [Count]
 
             ---
 
