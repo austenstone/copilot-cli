@@ -18,7 +18,7 @@ jobs:
         id: metadata
         uses: dependabot/fetch-metadata@v2
         with:
-          github-token: ${{ secrets.PAT }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Generate dependency analysis with Copilot
         uses: austenstone/copilot-cli-actions/.github/actions/copilot@main
