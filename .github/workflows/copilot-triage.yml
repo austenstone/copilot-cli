@@ -61,7 +61,6 @@ jobs:
 
             - Only use labels that are from the list of available labels.
             - You can choose multiple labels to apply.
-            - When generating shell commands, you **MUST NOT** use command substitution with `$(...)`, `<(...)`, or `>(...)`. This is a security measure to prevent unintended command execution.
 
             ## Input Data
 
@@ -80,9 +79,9 @@ jobs:
             ${{ env.ISSUE_BODY }}
             ```
 
-            **Output File Path**:
+            **Issue Number**:
             ```
-            ${{ env.GITHUB_ENV }}
+            ${{ github.event.issue.number }}
             ```
 
             ## Steps
@@ -91,51 +90,8 @@ jobs:
 
             2. Based on the issue title and issue body, classify the issue and choose all appropriate labels from the list of available labels.
 
-            3. Convert the list of appropriate labels into a comma-separated list (CSV). If there are no appropriate labels, use the empty string.
-
-            4. Use the "echo" shell command to append the CSV labels to the output file path provided above:
-
-                ```
-                echo "SELECTED_LABELS=[APPROPRIATE_LABELS_AS_CSV]" >> "[filepath_for_env]"
-                ```
-
-                for example:
-
-                ```
-                echo "SELECTED_LABELS=bug,enhancement" >> "/tmp/runner/env"
-                ```
-
-      - name: 'Apply labels'
-        env:
-          ISSUE_NUMBER: '${{ github.event.issue.number }}'
-          AVAILABLE_LABELS: '${{ steps.get_labels.outputs.available_labels }}'
-          SELECTED_LABELS: '${{ env.SELECTED_LABELS }}'
-        uses: 'actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea' # ratchet:actions/github-script@v7.0.1
-        with:
-          github-token: '${{ secrets.PAT || secrets.GITHUB_TOKEN || github.token }}'
-          script: |-
-            // Parse the available labels
-            const availableLabels = (process.env.AVAILABLE_LABELS || '').split(',')
-              .map((label) => label.trim())
-              .sort()
-
-            // Parse the label as a CSV, reject invalid ones - we do this just
-            // in case someone was able to prompt inject malicious labels.
-            const selectedLabels = (process.env.SELECTED_LABELS || '').split(',')
-              .map((label) => label.trim())
-              .filter((label) => availableLabels.includes(label))
-              .sort()
-
-            // Set the labels
-            const issueNumber = process.env.ISSUE_NUMBER;
-            if (selectedLabels && selectedLabels.length > 0) {
-              await github.rest.issues.setLabels({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: issueNumber,
-                labels: selectedLabels,
-              });
-              core.info(`Successfully set labels: ${selectedLabels.join(',')}`);
-            } else {
-              core.info(`Failed to determine labels to set. There may not be enough information in the issue or pull request.`)
-            }
+            3. Use the `issue_write` tool to update the issue with the selected labels:
+               - Set `method` to `'update'`
+               - Set `issue_number` to the issue number provided above
+               - Set `labels` to an array of the appropriate label names from the available labels
+               - Do not modify the issue body or other properties
