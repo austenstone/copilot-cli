@@ -268,5 +268,3 @@ runs:
           ~/.copilot/logs
           ~/.copilot/trajectory.md
         if-no-files-found: warn
-    # - name: Setup tmate session
-    #   uses: mxschmitt/action-tmate@v3
