@@ -1,11 +1,75 @@
+name: Copilot Dependabot Automation
+
 on:
   pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+  repository-projects: write
 
 jobs:
-  dependabot:
+  dependabot-analysis:
     runs-on: ubuntu-latest
-    if: github.event.pull_request.user.login == 'dependabot[bot]'
+    if: github.event.pull_request.user.login == 'dependabot[bot]'    
     steps:
-      - uses: austenstone/copilot-cli-actions/.github/actions/dependabot-update@main
+      - name: Checkout repository
+        uses: actions/checkout@v4
         with:
-          github-token: ${{ secrets.PAT }}
+          token: ${{ secrets.PAT || github.token }}
+          fetch-depth: 0
+
+      - name: Fetch Dependabot metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@v2
+        with:
+          github-token: ${{ secrets.PAT || github.token }}
+
+      - name: Generate dependency analysis with Copilot
+        uses: austenstone/copilot-cli-actions/.github/actions/copilot@main
+        env:
+          CONTEXT7_API_KEY: ${{ secrets.CONTEXT7_API_KEY }}
+        with:
+          github-token: ${{ secrets.PAT || github.token }}
+          mcp-config: |
+            {
+              "mcpServers": {
+                "context7": {
+                  "type": "http",
+                  "url": "https://mcp.context7.com/mcp",
+                  "headers": {
+                    "CONTEXT7_API_KEY": "$(CONTEXT7_API_KEY)"
+                  },
+                  "tools": ["get-library-docs", "resolve-library-id"]
+                }
+              }
+            }
+          prompt: |
+            🔍 **Dependabot Dependency Analysis Request**
+            
+            I need you to analyze this Dependabot pull request and provide comprehensive insights about the dependency update:
+            
+            **PR Details:**
+            ${{ toJson(steps.metadata.outputs) }}
+            
+            **Tasks to complete:**
+            
+            1. **Use Context7 to get documentation** for each dependency being updated
+            2. **Analyze version changes** - what's new, breaking changes, deprecations
+            3. **Security assessment** - check for known vulnerabilities and fixes
+            4. **Impact analysis** - assess potential impact on the codebase
+            5. **Compatibility review** - check for breaking changes and migration needs
+            6. **Generate recommendations** - should this be auto-merged, needs review, or requires manual intervention
+            
+            **Output Format:**
+            Create a comprehensive analysis comment that includes:
+            - 📋 Summary of changes
+            - 🔒 Security implications  
+            - ⚠️ Breaking changes (if any)
+            - 🚀 New features/improvements
+            - 📝 Migration notes (if needed)
+            - ✅ Recommendation (auto-merge, review, manual)
+            
+            Please post this analysis as a comment on the PR: ${{ github.event.pull_request.html_url }}
