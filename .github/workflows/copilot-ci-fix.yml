@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'failure' }}
     steps:
-      - uses: austenstone/copilot-cli-actions/.github/actions/copilot@main
+      - uses: austenstone/copilot-cli-actions@main
         with:
           github-token: ${{ secrets.PAT }}
           prompt: |
