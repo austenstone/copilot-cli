@@ -3,11 +3,13 @@ on:
     types: [opened, edited, reopened]
 
 jobs:
-  on-failure:
+  research:
     runs-on: ubuntu-latest
     if: ${{ github.event.issue.state == 'open' && contains(github.event.issue.title, 'Research') }}
     steps:
       - uses: austenstone/copilot-cli-actions@main
+        env:
+          FIRECRAWL_API_KEY: ${{ secrets.FIRECRAWL_API_KEY }}
         with:
           github-token: ${{ secrets.PAT }}
           mcp-config: |

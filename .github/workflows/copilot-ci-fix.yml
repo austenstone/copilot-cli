@@ -4,7 +4,7 @@ on:
     types: [completed]
 
 jobs:
-  on-failure:
+  ci-failure:
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'failure' }}
     steps:
