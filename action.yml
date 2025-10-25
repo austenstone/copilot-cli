@@ -90,18 +90,21 @@ runs:
         node-version: '22'
     - name: Install GitHub Copilot CLI
       run: |
+        echo "::group::Installing GitHub Copilot CLI"
         if [ "$COPILOT_VERSION" = "latest" ]; then
           npm install -g @github/copilot
         else
           npm install -g @github/copilot@$COPILOT_VERSION
         fi
         copilot --version || echo "Warning: Could not get copilot version"
+        echo "::endgroup::"
       shell: bash
       env:
         COPILOT_VERSION: ${{ inputs.copilot-version }}
     - name: Configure Copilot
       shell: bash
       run: |
+        echo "::group::Configuring Copilot"
         mkdir -p $XDG_CONFIG_HOME/.copilot
         
         # Create base MCP config with GitHub MCP server (comes pre-configured by default)
@@ -127,6 +130,7 @@ runs:
         # Write user-provided config (trusted directories are set via --add-dir flags instead)
         echo "$CONFIG" > $XDG_CONFIG_HOME/.copilot/config.json
         cat $XDG_CONFIG_HOME/.copilot/config.json
+        echo "::endgroup::"
       env:
         CONFIG: ${{ inputs.copilot-config }}
         MCP_CONFIG: ${{ inputs.mcp-config }}
@@ -134,7 +138,9 @@ runs:
     - name: Run Copilot CLI
       id: copilot
       run: |
+        echo "::group::Verifying GitHub authentication"
         gh auth status
+        echo "::endgroup::"
 
         set +e  # Don't exit on error
         
