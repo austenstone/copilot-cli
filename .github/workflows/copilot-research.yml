@@ -51,6 +51,9 @@ jobs:
                - Use `onlyMainContent: true` to extract clean content
                - Enable `deduplicateSimilarURLs` for crawls to reduce redundancy
 
+            5. **Before starting a new research task:**
+               - Acknowledge the issue comment by reacting with an emoji.
+
             ## Input Data
             ```json
             ${{ toJson(github.event) }}
