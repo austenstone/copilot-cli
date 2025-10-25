@@ -88,6 +88,14 @@ runs:
     - uses: actions/setup-node@v4
       with:
         node-version: '22'
+        cache: 'npm'
+    - name: Cache Copilot CLI
+      uses: actions/cache@v4
+      with:
+        path: ~/.npm
+        key: ${{ runner.os }}-copilot-cli-${{ inputs.copilot-version }}
+        restore-keys: |
+          ${{ runner.os }}-copilot-cli-
     - name: Install GitHub Copilot CLI
       run: |
         echo "::group::Installing GitHub Copilot CLI"
