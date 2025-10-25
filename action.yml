@@ -221,7 +221,7 @@ runs:
         COPILOT_ARGS+=(--save-trajectory-output "$HOME/.copilot/trajectory.md")
         
         # Debug: Show the full command being executed
-        echo "::group::Executing Copilot CLI with arguments"
+        echo "::group::GitHub Copilot CLI command"
         printf '%s\n' "${COPILOT_ARGS[@]}"
         echo "::endgroup::"
         
