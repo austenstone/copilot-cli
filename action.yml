@@ -88,7 +88,6 @@ runs:
     - uses: actions/setup-node@v4
       with:
         node-version: '22'
-        cache: 'npm'
     - name: Cache Copilot CLI
       uses: actions/cache@v4
       with:
@@ -256,8 +255,8 @@ runs:
       with:
         name: copilot-logs-${{ github.run_id }}-${{ github.run_attempt }}
         path: |
-          ${{ steps.copilot.outputs.logs_path }}
-          ${{ steps.copilot.outputs.trajectory_path }}
+          ~/.copilot/logs
+          ~/.copilot/trajectory.md
         if-no-files-found: warn
     # - name: Setup tmate session
     #   uses: mxschmitt/action-tmate@v3
