@@ -300,6 +300,7 @@
 
         // Generate a random color
         function randomColor() {
+            // Generate random color from 0x000000 to 0xFFFFFF
             const randomInt = Math.floor(Math.random() * 0x1000000);
             return '#' + randomInt.toString(16).padStart(6, '0');
         }
@@ -385,8 +386,11 @@
             const textArea = document.createElement('textarea');
             textArea.value = text;
             textArea.style.position = 'fixed';
+            textArea.style.top = '0';
             textArea.style.left = '-999999px';
+            textArea.setAttribute('readonly', '');
             document.body.appendChild(textArea);
+            textArea.focus();
             textArea.select();
             try {
                 document.execCommand('copy');
