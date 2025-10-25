@@ -1,6 +1,7 @@
 name: Copilot Dependabot Automation
 
 on:
+  workflow_call:
   pull_request:
     types: [opened, synchronize, reopened]
 
@@ -11,8 +12,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Fetch Dependabot metadata
         id: metadata
