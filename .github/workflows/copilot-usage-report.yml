@@ -2,7 +2,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  triage-alerts:
+  copilot-usage-report:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -24,7 +24,7 @@ jobs:
         
             ## Input Data
             
-            - Organization: ${{ github.event.organization.login }}
+            - Organization: octodemo
 
             ---
 
@@ -36,12 +36,12 @@ jobs:
 
             Gather data from these GitHub API endpoints:
             
-            1. **Metrics Endpoint**: `GET /orgs/${{ github.event.organization.login }}/copilot/metrics`
+            1. **Metrics Endpoint**: `GET /orgs/octodemo/copilot/metrics`
                - Collect usage statistics, acceptance rates, language breakdowns
                - User engagement metrics
                - Editor and IDE usage patterns
             
-            2. **Billing Endpoint**: `GET /orgs/${{ github.event.organization.login }}/copilot/billing`
+            2. **Billing Endpoint**: `GET /orgs/octodemo/copilot/billing`
                - Seat assignments and total seats
                - Active users vs. total seats
                - Billing breakdown and costs
