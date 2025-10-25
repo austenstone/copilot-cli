@@ -1,0 +1,66 @@
+on:
+  issues:
+    types: [opened, edited, reopened]
+
+jobs:
+  on-failure:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.issue.state == 'open' && contains(github.event.issue.title, 'Research') }}
+    steps:
+      - uses: austenstone/copilot-cli-actions@main
+        with:
+          github-token: ${{ secrets.PAT }}
+          mcp-config: |
+            {
+              "mcpServers": {
+                "firecrawl": {
+                  "command": "npx",
+                  "args": ["-y", "firecrawl-mcp"],
+                  "env": {
+                    "FIRECRAWL_API_KEY": "${FIRECRAWL_API_KEY}"
+                  }
+                }
+              }
+            }
+          prompt: |
+            ## Role
+
+            You are a research assistant. Analyze the current GitHub issue and identify the research topic. Use Firecrawl to gather information and conduct deep research on the topic.
+
+            ## Guidelines
+
+            1. **For discovering information:**
+               - Use `firecrawl_search` when you don't know which websites contain the information
+               - Use `firecrawl_map` to discover URLs on a specific website before scraping
+
+            2. **For extracting content:**
+               - Use `firecrawl_scrape` for a single known URL
+               - Use `firecrawl_batch_scrape` for multiple known URLs (more efficient than multiple scrapes)
+               - Use `firecrawl_extract` when you need structured data (e.g., prices, names, specific details)
+
+            3. **For comprehensive coverage:**
+               - Use `firecrawl_crawl` carefully with appropriate `limit` and `maxDepth` to avoid token overflow
+               - Consider using `map` + `batch_scrape` for better control over large sites
+
+            4. **Best practices:**
+               - Always use reliable and up-to-date sources
+               - Provide summaries and key points from your research
+               - Cite all sources with URLs
+               - Use `onlyMainContent: true` to extract clean content
+               - Enable `deduplicateSimilarURLs` for crawls to reduce redundancy
+
+            ## Input Data
+            ```json
+            ${{ toJson(github.event) }}
+            ```
+
+            ## Output Format
+
+            Generate a comprehensive Markdown research report and post it as a comment to: ${{ github.event.issue.html_url }}
+
+            The report should include:
+            - Executive summary
+            - Key findings with citations
+            - Detailed analysis sections
+            - Source URLs for all information
+            
