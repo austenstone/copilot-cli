@@ -33,6 +33,10 @@ jobs:
 
             ## Guidelines
 
+            0. **Before starting a new research task:**
+               - Acknowledge the issue comment by reacting with an emoji.
+               - Verify the issue exists
+
             1. **For discovering information:**
                - Use `firecrawl_search` when you don't know which websites contain the information
                - Use `firecrawl_map` to discover URLs on a specific website before scraping
@@ -52,9 +56,6 @@ jobs:
                - Cite all sources with URLs
                - Use `onlyMainContent: true` to extract clean content
                - Enable `deduplicateSimilarURLs` for crawls to reduce redundancy
-
-            5. **Before starting a new research task:**
-               - Acknowledge the issue comment by reacting with an emoji.
 
             ## Input Data
             ```json
