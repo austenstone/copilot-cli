@@ -300,7 +300,8 @@
 
         // Generate a random color
         function randomColor() {
-            return '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
+            const randomInt = Math.floor(Math.random() * 0x1000000);
+            return '#' + randomInt.toString(16).padStart(6, '0');
         }
 
         // Get a random color name
@@ -366,9 +367,34 @@
 
         // Copy color to clipboard
         function copyToClipboard(text) {
-            navigator.clipboard.writeText(text).then(() => {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(() => {
+                    showCopyIndicator();
+                }).catch((err) => {
+                    console.error('Failed to copy:', err);
+                    // Fallback for older browsers
+                    fallbackCopyToClipboard(text);
+                });
+            } else {
+                fallbackCopyToClipboard(text);
+            }
+        }
+
+        // Fallback copy method for browsers without clipboard API
+        function fallbackCopyToClipboard(text) {
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            textArea.style.position = 'fixed';
+            textArea.style.left = '-999999px';
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+                document.execCommand('copy');
                 showCopyIndicator();
-            });
+            } catch (err) {
+                console.error('Fallback copy failed:', err);
+            }
+            document.body.removeChild(textArea);
         }
 
         // Show copy indicator
@@ -417,10 +443,13 @@
             container.style.display = 'block';
             list.innerHTML = '';
             
-            saved.reverse().forEach((palette, index) => {
+            // Display in reverse order (newest first) but keep original indices
+            const reversedSaved = [...saved].reverse();
+            reversedSaved.forEach((palette, index) => {
                 const item = document.createElement('div');
                 item.className = 'saved-palette-item';
-                item.onclick = () => loadPalette(saved.length - 1 - index);
+                const originalIndex = saved.length - 1 - index;
+                item.onclick = () => loadPalette(originalIndex);
                 
                 const colorsHTML = palette.colors.map(color => 
                     `<div class="saved-color-preview" style="background-color: ${color}"></div>`
