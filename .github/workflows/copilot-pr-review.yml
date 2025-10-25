@@ -138,18 +138,18 @@ jobs:
 
             ### Step 3: Submit the Review on GitHub
 
-            1. **Create Pending Review:** Call `mcp__github__create_pending_pull_request_review`. Ignore errors like "can only have one pending review per pull request" and proceed to the next step.
+            1. **Create Pending Review:** Call `pull_request_review_write` with method 'create'. Ignore errors like "can only have one pending review per pull request" and proceed to the next step.
 
-            2. **Add Comments and Suggestions:** For each formulated review comment, call `mcp__github__add_comment_to_pending_review`.
+            2. **Add Comments and Suggestions:** For each formulated review comment, call `add_comment_to_pending_review`.
 
                 2a. When there is a code suggestion (preferred), structure the comment payload using this exact template:
 
                     <COMMENT>
                     {{SEVERITY}} {{COMMENT_TEXT}}
 
-                    ```suggestion
+                    ````suggestion
                     {{CODE_SUGGESTION}}
-                    ```
+                    ````
                     </COMMENT>
 
                 2b. When there is no code suggestion, structure the comment payload using this exact template:
@@ -158,7 +158,7 @@ jobs:
                     {{SEVERITY}} {{COMMENT_TEXT}}
                     </COMMENT>
 
-            3. **Submit Final Review:** Call `mcp__github__submit_pending_pull_request_review` with a summary comment and event type "COMMENT". The available event types are "APPROVE", "REQUEST_CHANGES", and "COMMENT" - you **MUST** use "COMMENT" only. **DO NOT** use "APPROVE" or "REQUEST_CHANGES" event types. The summary comment **MUST** use this exact markdown format:
+            3. **Submit Final Review:** Call `pull_request_review_write` with method 'submit_pending', a summary comment in the body parameter, and event type "COMMENT". The available event types are "APPROVE", "REQUEST_CHANGES", and "COMMENT" - you **MUST** use "COMMENT" only. **DO NOT** use "APPROVE" or "REQUEST_CHANGES" event types. The summary comment **MUST** use this exact markdown format:
 
                 <SUMMARY>
                 ## 📋 Review Summary
