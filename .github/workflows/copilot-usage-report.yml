@@ -5,7 +5,6 @@ jobs:
   copilot-usage-report:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
       - uses: austenstone/copilot-cli-actions@main
         with:
           github-token: ${{ secrets.PAT }}
@@ -24,7 +23,9 @@ jobs:
         
             ## Input Data
             
-            - Organization: octodemo
+            - Organization: ${{ github.event.organization.login }}
+
+            - Repository (For issue creation): ${{ github.event.repository.name }}
 
             ---
 
@@ -36,12 +37,12 @@ jobs:
 
             Gather data from these GitHub API endpoints:
             
-            1. **Metrics Endpoint**: `GET /orgs/octodemo/copilot/metrics`
+            1. **Metrics Endpoint**: `GET /orgs/${{ github.event.organization.login }}/copilot/metrics`
                - Collect usage statistics, acceptance rates, language breakdowns
                - User engagement metrics
                - Editor and IDE usage patterns
             
-            2. **Billing Endpoint**: `GET /orgs/octodemo/copilot/billing`
+            2. **Billing Endpoint**: `GET /orgs/${{ github.event.organization.login }}/copilot/billing`
                - Seat assignments and total seats
                - Active users vs. total seats
                - Billing breakdown and costs
@@ -116,11 +117,10 @@ jobs:
 
             ### Step 5: Create GitHub Issue
 
-            Create a GitHub issue with:
+            Create a GitHub issue with the issue_write tool:
             - **Title**: `📊 GitHub Copilot Usage Report - [Current Month/Date]`
-            - **Body**: The complete markdown report
+            - **Body**: [The complete markdown report]
             - **Labels**: `report`, `copilot-metrics`, `analytics`
-            - **Assignee**: Relevant team leads (if identifiable)
 
             ---
 
