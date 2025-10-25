@@ -208,10 +208,9 @@ runs:
         COPILOT_ARGS+=(--save-trajectory-output "$HOME/.copilot/trajectory.md")
         
         # Debug: Show the full command being executed
-        echo "========================================"
-        echo "Executing Copilot CLI with arguments:"
+        echo "::group::Executing Copilot CLI with arguments"
         printf '%s\n' "${COPILOT_ARGS[@]}"
-        echo "========================================"
+        echo "::endgroup::"
         
         # Execute the command with array expansion for proper quoting
         copilot "${COPILOT_ARGS[@]}"
