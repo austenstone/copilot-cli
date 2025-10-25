@@ -39,29 +39,72 @@ jobs:
               }
             }
           prompt: |
-            🔍 **Dependabot Dependency Analysis Request**
+            You are an expert Senior Software Engineer specializing in dependency management and secure coding. Your task is to analyze a Dependabot pull request and generate a comprehensive analysis comment for the PR.
             
-            I need you to analyze this Dependabot pull request and provide comprehensive insights about the dependency update:
+            ### 1. Dependency Update Details
             
-            **PR Details:**
+            * **Dependency Names:** ${{ steps.metadata.outputs.dependency-names }}
+            * **Update Type:** ${{ steps.metadata.outputs.update-type }}
+            * **Old Version(s):** ${{ steps.metadata.outputs.previous-version }}
+            * **New Version(s):** ${{ steps.metadata.outputs.new-version }}
+            
+            ### 2. Provided Context
+
+            ```json
             ${{ toJson(steps.metadata.outputs) }}
+            ```
             
-            **Tasks to complete:**
+            ### 3. Your Tasks
             
-            1. **Use Context7 to get documentation** for each dependency being updated
-            2. **Analyze version changes** - what's new, breaking changes, deprecations
-            3. **Security assessment** - check for known vulnerabilities and fixes
-            4. **Impact analysis** - assess potential impact on the codebase
-            5. **Compatibility review** - check for breaking changes and migration needs
-            6. **Generate recommendations** - should this be auto-merged, needs review, or requires manual intervention
+            Based on the context provided above:
             
-            **Output Format:**
-            Create a comprehensive analysis comment that includes:
-            - 📋 Summary of changes
-            - 🔒 Security implications  
-            - ⚠️ Breaking changes (if any)
-            - 🚀 New features/improvements
-            - 📝 Migration notes (if needed)
-            - ✅ Recommendation (auto-merge, review, manual)
+            1.  **Use Context7 to get library documentation** - Use the `resolve-library-id` and `get-library-docs` tools to fetch up-to-date documentation for the dependency being updated. Focus on migration guides and breaking changes between versions.
+            2.  **Analyze Release Notes:** Summarize the Release Notes / Changelog. Explicitly list all **Breaking Changes**, **New Features**, and **Deprecations** found between the old and new versions.
+            3.  **Assess Security:** Review the Known Vulnerabilities data. State if this update fixes any known vulnerabilities and their severity (CVSS score).
+            4.  **Analyze Code Impact:** Search the codebase to understand how this dependency is used. Use `semantic_search` or `grep_search` to find import statements and usage patterns.
+                * If there are breaking changes, determine if they affect our code.
+                * If they do affect our code, pinpoint which files/patterns are affected and suggest necessary code changes to migrate.
+                * Attempt to build the project to verify compatibility.
+            5.  **Formulate Recommendation:** Based on your analysis, provide a clear, final recommendation.
             
-            Please post this analysis as a comment on the PR: ${{ github.event.pull_request.html_url }}
+            ### 4. Output Format
+            
+            Generate the Markdown for a PR comment and post it to: ${{ github.event.pull_request.html_url }}
+            
+            Follow this structure precisely:
+            
+            ---
+            
+            ### 📋 Summary
+            *(Provide a one-sentence summary of the update, e.g., "This is a minor/major/patch update for `[Dependency Name]` from `vX.X` to `vY.Y`.")*
+            
+            ### 🔒 Security
+            *(State if this update resolves any vulnerabilities. Be specific with CVE IDs and CVSS scores if available. If no vulnerabilities, state "No known vulnerabilities addressed.")*
+            
+            ### ⚠️ Breaking Changes
+            *(List any breaking changes from the release notes and documentation. If there are none, state "No breaking changes found.")*
+            
+            ### 🚀 New Features & Improvements
+            *(List any notable new features or improvements from the changelog.)*
+            
+            ### 📝 Migration & Impact Analysis
+            *(This is the most important section.)*
+            * **If no code changes are needed:** "I have analyzed our codebase and this update appears to be fully compatible. No migration is required."
+            * **If code changes ARE needed:** "This update requires changes to our code. The following breaking change(s) affect our implementation:"
+                * *(List the breaking change and show the diff for the required fix with file locations, e.g.,)*
+                ```diff
+                # In file: src/example.ts
+                - // Old code
+                - import { oldMethod } from '[library-name]';
+                - oldMethod();
+                
+                + // New code
+                + import { newMethod } from '[library-name]';
+                + newMethod();
+                ```
+            
+            ### ✅ Recommendation
+            *(Choose one and explain why.)*
+            * **✅ Auto-Merge:** This update is a `[minor/patch]`, resolves `[X]` vulnerabilities, and requires no code changes.
+            * **👀 Needs Review:** This update is a `[major/minor]` with significant new features but appears compatible. Please review the changelog before merging.
+            * **⚠️ Manual Intervention Required:** This update includes breaking changes that require code modifications. Please review the migration notes above and apply the fixes.
