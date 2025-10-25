@@ -68,8 +68,11 @@ jobs:
             **Actions:**
             1. Retrieve the current repository context from the workflow event data
             2. Call the Dependabot alerts listing tool to retrieve all open alerts
+              a. Call the Get dependabot alert tool to get all alert details for each alert.
             3. Call the Secret Scanning alerts listing tool to retrieve all open alerts
+              a. Call the Get secret scanning alert tool to get all alert details for each alert.
             4. Call the Code Scanning alerts listing tool to retrieve all open alerts
+              a. Call the Get code scanning alert tool to get all alert details for each alert.
             5. Group and categorize alerts by type and severity
 
             **Output:** A complete inventory of all open security alerts.
