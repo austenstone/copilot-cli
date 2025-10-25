@@ -1,10 +1,13 @@
 on:
   workflow_call:
-    inputs:
-      additional_context:
-        type: 'string'
-        description: 'Any additional context from the request'
-        required: false
+  schedule:
+    - cron: '0 * * * *' # Runs every hour
+  issues:
+    types: [opened, edited, reopened]
+  pull_request:
+    branches:
+      - 'main'
+  workflow_dispatch:
 
 jobs:
   triage:
