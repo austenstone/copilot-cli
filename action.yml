@@ -1,5 +1,7 @@
 name: 'GitHub Copilot CLI'
 description: 'GitHub Copilot CLI wrapper'
+icon: 'cpu'
+color: 'purple'
 inputs:
   github-token:
     description: 'GitHub Personal Access Token with required permissions'
