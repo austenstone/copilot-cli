@@ -40,7 +40,7 @@ jobs:
             core.setOutput('available_labels', labelNames.join(','));
             core.info(`Found ${labelNames.length} labels: ${labelNames.join(', ')}`);
             return labelNames;
-      - uses: austenstone/copilot-cli-actions@main
+      - uses: austenstone/copilot-cli@main
         if: steps.get_labels.outputs.available_labels != ''
         env:
           GITHUB_TOKEN: '' # Do NOT pass any auth tokens here since this runs on untrusted inputs

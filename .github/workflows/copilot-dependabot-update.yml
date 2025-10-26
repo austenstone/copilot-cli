@@ -17,7 +17,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Generate dependency analysis with Copilot
-        uses: austenstone/copilot-cli-actions@main
+        uses: austenstone/copilot-cli@main
         env:
           CONTEXT7_API_KEY: ${{ secrets.CONTEXT7_API_KEY }}
         with:

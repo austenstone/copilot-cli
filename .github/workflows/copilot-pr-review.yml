@@ -8,7 +8,7 @@ jobs:
     if: ${{ github.event.pull_request.state == 'open' }}
     steps:
       - uses: actions/checkout@v5
-      - uses: austenstone/copilot-cli-actions@main
+      - uses: austenstone/copilot-cli@main
         with:
           github-token: ${{ secrets.PAT }}
           prompt: |

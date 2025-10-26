@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ github.event.issue.state == 'open' && contains(github.event.issue.title, 'Research') }}
     steps:
-      - uses: austenstone/copilot-cli-actions@main
+      - uses: austenstone/copilot-cli@main
         env:
           FIRECRAWL_API_KEY: ${{ secrets.FIRECRAWL_API_KEY }}
         with:

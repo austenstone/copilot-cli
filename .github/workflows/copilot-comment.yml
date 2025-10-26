@@ -13,7 +13,7 @@ jobs:
           modified_comment=$(echo "${{ github.event.comment.body }}" | sed 's/\/copilot//')
           echo "prompt=${modified_comment}" >> "$GITHUB_OUTPUT"
       - name: Run Copilot
-        uses: austenstone/copilot-cli-actions@main
+        uses: austenstone/copilot-cli@main
         with:
           github-token: ${{ secrets.PAT }}
           prompt: |

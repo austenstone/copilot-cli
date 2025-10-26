@@ -6,7 +6,7 @@ jobs:
   copilot:
     runs-on: ubuntu-latest
     steps:
-      - uses: austenstone/copilot-cli-actions@main
+      - uses: austenstone/copilot-cli@main
         with:
           github-token: ${{ secrets.PAT2 }}
           mcp-config: |
