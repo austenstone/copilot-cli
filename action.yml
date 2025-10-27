@@ -83,9 +83,6 @@ inputs:
     required: false
     default: 'all'
 outputs:
-  trajectory-path:
-    description: 'Path to the trajectory markdown file'
-    value: ${{ steps.copilot.outputs.trajectory_path }}
   logs-path:
     description: 'Path to the copilot logs directory'
     value: ${{ steps.copilot.outputs.logs_path }}
@@ -95,6 +92,10 @@ outputs:
 runs:
   using: 'composite'
   steps:
+    - name: Configure Git credentials
+      run: |
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+        git config --global user.name "${{ github.workflow }}"
     - uses: actions/setup-node@v4
       with:
         node-version: '22'
@@ -230,7 +231,6 @@ runs:
         # Add other options
         COPILOT_ARGS+=(--log-level "$LOG_LEVEL")
         COPILOT_ARGS+=(--log-dir "$HOME/.copilot/logs")
-        COPILOT_ARGS+=(--save-trajectory-output "$HOME/.copilot/trajectory.md")
         
         # Debug: Show the full command being executed
         echo "::group::GitHub Copilot CLI command"
@@ -242,7 +242,6 @@ runs:
         EXIT_CODE=$?
         
         # Set outputs
-        echo "trajectory_path=$HOME/.copilot/trajectory.md" >> $GITHUB_OUTPUT
         echo "logs_path=$HOME/.copilot/logs" >> $GITHUB_OUTPUT
         echo "exit_code=$EXIT_CODE" >> $GITHUB_OUTPUT
       env:
@@ -268,5 +267,4 @@ runs:
         name: copilot-logs-${{ github.run_id }}-${{ github.run_attempt }}
         path: |
           ~/.copilot/logs
-          ~/.copilot/trajectory.md
         if-no-files-found: warn
