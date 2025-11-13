@@ -6,7 +6,8 @@ branding:
 inputs:
   github-token:
     description: 'GitHub Personal Access Token with required permissions'
-    required: true
+    default: ${{ github.token }}
+    required: false
   prompt:
     description: 'Prompt to send to GitHub Copilot'
     required: true
