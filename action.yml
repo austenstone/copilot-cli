@@ -75,11 +75,7 @@ inputs:
   upload-artifact:
     description: 'Upload artifact after running Copilot'
     required: false
-    default: true
-  cache-cli:
-    description: 'Enable caching for npm packages'
-    required: false
-    default: 'false'
+    default: 'true'
   github-mcp-toolsets:
     description: 'Specify GitHub MCP toolsets to enable (e.g., "repos,issues,pull_requests,actions,code_security")'
     required: false
@@ -94,30 +90,18 @@ outputs:
 runs:
   using: 'composite'
   steps:
-    - name: Configure Git credentials
-      run: |
+    - uses: actions/setup-node@v4
+      id: setup-node
+      with:
+        node-version: '22'
+    - run: |
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
         git config --global user.name "${{ github.workflow }}"
       shell: bash
-    - uses: actions/setup-node@v4
-      with:
-        node-version: '22'
-    - name: Cache Copilot CLI
-      uses: actions/cache@v4
-      if: ${{ inputs.cache-cli == 'true' }}
-      with:
-        path: ~/.npm
-        key: ${{ runner.os }}-copilot-cli-${{ inputs.copilot-version }}
-        restore-keys: |
-          ${{ runner.os }}-copilot-cli-
     - name: Install GitHub Copilot CLI
       run: |
         echo "::group::Installing GitHub Copilot CLI"
-        if [ "$COPILOT_VERSION" = "latest" ]; then
-          npm install -g @github/copilot
-        else
-          npm install -g @github/copilot@$COPILOT_VERSION
-        fi
+        npm install -g @github/copilot@$COPILOT_VERSION
         copilot --version || echo "Warning: Could not get copilot version"
         echo "::endgroup::"
       shell: bash
@@ -166,6 +150,12 @@ runs:
         echo "::endgroup::"
 
         set +e  # Don't exit on error
+        
+        # Normalize boolean inputs to lowercase
+        ALLOW_ALL_TOOLS=$(echo "$ALLOW_ALL_TOOLS" | tr '[:upper:]' '[:lower:]')
+        NO_COLOR=$(echo "$NO_COLOR" | tr '[:upper:]' '[:lower:]')
+        SCREEN_READER=$(echo "$SCREEN_READER" | tr '[:upper:]' '[:lower:]')
+        SHOW_BANNER=$(echo "$SHOW_BANNER" | tr '[:upper:]' '[:lower:]')
         
         # Build args array for safer execution with multi-line prompts
         COPILOT_ARGS=(-p "$PROMPT")
@@ -247,10 +237,9 @@ runs:
         # Set outputs
         echo "logs_path=$HOME/.copilot/logs" >> $GITHUB_OUTPUT
         echo "exit_code=$EXIT_CODE" >> $GITHUB_OUTPUT
+        exit $EXIT_CODE
       env:
-        COPILOT_GITHUB_TOKEN: ${{ inputs.github-token }}
         GH_TOKEN: ${{ inputs.github-token }}
-        GITHUB_TOKEN: ${{ inputs.github-token }}
         PROMPT: ${{ inputs.prompt }}
         LOG_LEVEL: ${{ inputs.log-level }}
         ALLOW_ALL_TOOLS: ${{ inputs.allow-all-tools }}
