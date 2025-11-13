@@ -6,7 +6,8 @@ jobs:
   copilot:
     runs-on: ubuntu-latest
     steps:
-      - uses: austenstone/copilot-cli@main
+      - uses: actions/checkout@v5
+      - uses: ./
         with:
           mcp-config: |
             {
