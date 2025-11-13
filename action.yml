@@ -264,7 +264,7 @@ runs:
         GITHUB_WORKSPACE: ${{ github.workspace }}
       shell: bash
     - name: Upload Copilot Artifacts
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       if: ${{ always() && inputs.upload-artifact == 'true' }}
       with:
         name: copilot-logs-${{ github.run_id }}-${{ github.run_attempt }}
