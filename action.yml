@@ -154,7 +154,6 @@ runs:
         cat $XDG_CONFIG_HOME/.copilot/config.json
         echo "::endgroup::"
       env:
-        XDG_CONFIG_HOME: ${{ runner.temp }}
         CONFIG: ${{ inputs.copilot-config }}
         MCP_CONFIG: ${{ inputs.mcp-config }}
         GITHUB_MCP_TOOLSETS: ${{ inputs.github-mcp-toolsets }}
@@ -249,7 +248,6 @@ runs:
         echo "logs_path=$HOME/.copilot/logs" >> $GITHUB_OUTPUT
         echo "exit_code=$EXIT_CODE" >> $GITHUB_OUTPUT
       env:
-        XDG_CONFIG_HOME: ${{ runner.temp }}
         COPILOT_GITHUB_TOKEN: ${{ inputs.github-token }}
         GH_TOKEN: ${{ inputs.github-token }}
         GITHUB_TOKEN: ${{ inputs.github-token }}
