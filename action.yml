@@ -270,7 +270,6 @@ runs:
         echo "exit_code=$EXIT_CODE" >> $GITHUB_OUTPUT
       env:
         GH_TOKEN: ${{ inputs.github-token }}
-        GITHUB_TOKEN: ${{ inputs.github-token }}
         COPILOT_GITHUB_TOKEN: ${{ inputs.github-token }}
         PROMPT: ${{ inputs.prompt }}
         LOG_LEVEL: ${{ inputs.log-level }}
