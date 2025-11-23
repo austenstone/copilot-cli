@@ -265,7 +265,6 @@ runs:
         SHOW_BANNER: ${{ inputs.show-banner }}
         TEMP: ${{ runner.temp }}
         GITHUB_WORKSPACE: ${{ github.workspace }}
-      shell: bash
     - name: Upload Copilot Artifacts
       uses: actions/upload-artifact@v4
       if: ${{ always() && inputs.upload-artifact == 'true' }}
