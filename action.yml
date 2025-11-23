@@ -94,22 +94,22 @@ outputs:
 runs:
   using: 'composite'
   steps:
-    - name: Configure Git credentials
-      run: |
-        git config --global user.email "github-actions[bot]@users.noreply.github.com"
-        git config --global user.name "${{ github.workflow }}"
-      shell: bash
-    - uses: actions/setup-node@v4
+    - uses: actions/setup-node@v6
       with:
         node-version: '22'
-    - name: Cache Copilot CLI
-      uses: actions/cache@v4
-      if: ${{ inputs.cache-cli == 'true' }}
-      with:
-        path: ~/.npm
-        key: ${{ runner.os }}-copilot-cli-${{ inputs.copilot-version }}
-        restore-keys: |
-          ${{ runner.os }}-copilot-cli-
+    # - name: Configure Git credentials
+    #   run: |
+    #     git config --global user.email "github-actions[bot]@users.noreply.github.com"
+    #     git config --global user.name "${{ github.workflow }}"
+    #   shell: bash
+    # - name: Cache Copilot CLI
+    #   uses: actions/cache@v4
+    #   if: ${{ inputs.cache-cli == 'true' }}
+    #   with:
+    #     path: ~/.npm
+    #     key: ${{ runner.os }}-copilot-cli-${{ inputs.copilot-version }}
+    #     restore-keys: |
+    #       ${{ runner.os }}-copilot-cli-
     - name: Install GitHub Copilot CLI
       run: |
         echo "::group::Installing GitHub Copilot CLI"
