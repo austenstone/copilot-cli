@@ -157,27 +157,6 @@ runs:
         MCP_CONFIG: ${{ inputs.mcp-config }}
         GITHUB_MCP_TOOLSETS: ${{ inputs.github-mcp-toolsets }}
         GH_TOKEN: ${{ inputs.github-token }}
-    - name: Validate Copilot Authentication
-      shell: bash
-      run: |
-        echo "::group::Validating Copilot token permissions"
-        # Test if the token has Copilot access by making a test API call
-        HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
-          -H "Authorization: Bearer $COPILOT_GITHUB_TOKEN" \
-          -H "Accept: application/json" \
-          "https://api.githubcopilot.com/models")
-        
-        if [ "$HTTP_CODE" != "200" ]; then
-          echo "::error::Authentication failed with HTTP $HTTP_CODE. The provided token does not have 'Copilot Requests' permission."
-          echo "::error::Please create a PAT with 'Copilot Requests' permission: https://github.com/settings/tokens/new?scopes=copilot"
-          echo "::error::The default \${{ github.token }} cannot be used as it lacks Copilot access."
-          exit 1
-        fi
-        
-        echo "✓ Token has valid Copilot access"
-        echo "::endgroup::"
-      env:
-        COPILOT_GITHUB_TOKEN: ${{ inputs.github-token }}
     - name: Run Copilot CLI
       id: copilot
       shell: bash
