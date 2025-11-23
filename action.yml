@@ -162,7 +162,7 @@ runs:
       id: copilot
       run: |
         echo "::group::Verifying GitHub authentication"
-        gh auth login --with-token < $GH_TOKEN
+        echo "$GH_TOKEN" | gh auth login --with-token
         gh auth status
         echo "::endgroup::"
 
