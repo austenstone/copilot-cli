@@ -162,7 +162,6 @@ runs:
       id: copilot
       run: |
         echo "::group::Verifying GitHub authentication"
-        echo "$GH_TOKEN" | gh auth login --with-token
         gh auth status
         echo "::endgroup::"
 
@@ -250,6 +249,7 @@ runs:
         echo "exit_code=$EXIT_CODE" >> $GITHUB_OUTPUT
       env:
         GH_TOKEN: ${{ inputs.github-token }}
+        GITHUB_TOKEN: ${{ inputs.github-token }}
         PROMPT: ${{ inputs.prompt }}
         LOG_LEVEL: ${{ inputs.log-level }}
         ALLOW_ALL_TOOLS: ${{ inputs.allow-all-tools }}
