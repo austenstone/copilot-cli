@@ -133,7 +133,7 @@ runs:
           "mcpServers": {
             "github-mcp-server": {
               "type": "http",
-              "url": "https://api.githubcopilot.com/mcp/readonly",
+              "url": "https://api.githubcopilot.com/mcp/",
               "headers": {
                 "Authorization": "Bearer '$GH_TOKEN'",
                 "X-MCP-Toolsets": "'$GITHUB_MCP_TOOLSETS'"
