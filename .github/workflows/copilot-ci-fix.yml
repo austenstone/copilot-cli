@@ -1,6 +1,6 @@
 on:
   workflow_run:
-    workflows: [CI] # add workflows here or remove for all workflows
+    # workflows: [CI] # add workflows here or remove for all workflows
     types: [completed]
 
 jobs:
