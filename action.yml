@@ -17,10 +17,6 @@ inputs:
       {
         "mcpServers": { }
       }
-  github-mcp-toolsets:
-    description: 'Specify GitHub MCP toolsets to enable (e.g., "repos,issues,pull_requests,actions,code_security")'
-    required: false
-    default: 'all'
   copilot-config:
     description: 'Configuration for GitHub Copilot'
     required: false
@@ -111,8 +107,7 @@ runs:
         
         # Create base MCP config with GitHub MCP server (comes pre-configured by default)
         BASE_MCP_CONFIG='{
-          "mcpServers": {
-          }
+          "mcpServers": { }
         }'
 
         # Merge user-provided MCP config with base config
@@ -122,7 +117,6 @@ runs:
       env:
         CONFIG: ${{ inputs.copilot-config }}
         MCP_CONFIG: ${{ inputs.mcp-config }}
-        GITHUB_MCP_TOOLSETS: ${{ inputs.github-mcp-toolsets }}
         GH_TOKEN: ${{ inputs.github-token }}
     - name: Run Copilot CLI
       id: copilot
