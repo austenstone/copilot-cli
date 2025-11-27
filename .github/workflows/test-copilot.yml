@@ -35,6 +35,6 @@ jobs:
           prompt: |
             Try to experiment with mcp tools available to see what they do and if they work.
 
-            List all tools.
+            List all tools. multiple times in different formats.
 
-            Try the github mcp tools.
+            Try the github mcp tools. #tool:github-mcp-server/* 
