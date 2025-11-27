@@ -17,6 +17,10 @@ inputs:
       {
         "mcpServers": { }
       }
+  github-mcp-toolsets:
+    description: 'Specify GitHub MCP toolsets to enable (e.g., "repos,issues,pull_requests,actions,code_security")'
+    required: false
+    default: 'all'
   copilot-config:
     description: 'Configuration for GitHub Copilot'
     required: false
@@ -27,18 +31,16 @@ inputs:
         "theme": "auto",
         "trusted_folders": []
       }
-  log-level:
-    description: 'Log level for GitHub Copilot'
-    required: false
-    default: 'all'
   allow-all-tools:
     description: 'Allow all tools without approval'
     required: false
     default: 'true'
+  allowed-tools:
+    description: 'Comma-separated list of tools to allow (e.g., "shell(rm),shell(git push)")'
+    required: false
   denied-tools:
     description: 'Comma-separated list of tools to deny (e.g., "shell(rm),shell(git push)")'
     required: false
-    default: ''
   copilot-version:
     description: 'Version of @github/copilot to install (e.g., "latest", "0.0.329")'
     required: false
@@ -46,43 +48,22 @@ inputs:
   model:
     description: 'Model to use (e.g., "claude-sonnet-4.5", "claude-sonnet-4", "gpt-5")'
     required: false
-    default: ''
   additional-directories:
     description: 'Comma-separated list of additional directories to trust for file access (e.g., "/tmp,/var/log")'
     required: false
-    default: ''
   disable-mcp-servers:
     description: 'Comma-separated list of MCP servers to disable (e.g., "github-mcp-server,custom-server")'
     required: false
-    default: ''
-  no-color:
-    description: 'Disable all color output (useful for CI logs)'
-    required: false
-    default: 'true'
-  screen-reader:
-    description: 'Enable screen reader optimizations'
-    required: false
-    default: 'false'
   resume-session:
     description: 'Resume from a previous session ID (use "latest" for most recent)'
     required: false
-    default: ''
-  show-banner:
-    description: 'Show the animated startup banner'
-    required: false
-    default: 'false'
   upload-artifact:
     description: 'Upload artifact after running Copilot'
     required: false
     default: true
-  cache-cli:
-    description: 'Enable caching for npm packages'
+  agent:
+    description: 'Specify a custom agent to use'
     required: false
-    default: 'false'
-  github-mcp-toolsets:
-    description: 'Specify GitHub MCP toolsets to enable (e.g., "repos,issues,pull_requests,actions,code_security")'
-    required: false
-    default: 'all'
 outputs:
   logs-path:
     description: 'Path to the copilot logs directory'
@@ -148,7 +129,7 @@ runs:
         echo "$MERGED_MCP_CONFIG" > $XDG_CONFIG_HOME/.copilot/mcp-config.json
         cat $XDG_CONFIG_HOME/.copilot/mcp-config.json
 
-        # Write user-provided config (trusted directories are set via --add-dir flags instead)
+        # Write user-provided config
         echo "$CONFIG" > $XDG_CONFIG_HOME/.copilot/config.json
         cat $XDG_CONFIG_HOME/.copilot/config.json
         echo "::endgroup::"
@@ -194,6 +175,14 @@ runs:
           COPILOT_ARGS+=(--allow-all-tools)
         fi
         
+        # Add allowed tools
+        if [ -n "$ALLOWED_TOOLS" ]; then
+          IFS=',' read -ra TOOLS <<< "$ALLOWED_TOOLS"
+          for tool in "${TOOLS[@]}"; do
+            COPILOT_ARGS+=(--allow-tool "$tool")
+          done
+        fi
+        
         # Add denied tools
         if [ -n "$DENIED_TOOLS" ]; then
           IFS=',' read -ra TOOLS <<< "$DENIED_TOOLS"
@@ -207,14 +196,9 @@ runs:
           COPILOT_ARGS+=(--model "$MODEL")
         fi
         
-        # Add no-color flag for CI environments
-        if [ "$NO_COLOR" = "true" ]; then
-          COPILOT_ARGS+=(--no-color)
-        fi
-        
-        # Add screen reader optimizations
-        if [ "$SCREEN_READER" = "true" ]; then
-          COPILOT_ARGS+=(--screen-reader)
+        # Add agent selection
+        if [ -n "$AGENT" ]; then
+          COPILOT_ARGS+=(--agent "$AGENT")
         fi
         
         # Add resume session
@@ -226,13 +210,7 @@ runs:
           fi
         fi
         
-        # Add banner flag
-        if [ "$SHOW_BANNER" = "true" ]; then
-          COPILOT_ARGS+=(--banner)
-        fi
-        
         # Add other options
-        COPILOT_ARGS+=(--log-level "$LOG_LEVEL")
         COPILOT_ARGS+=(--log-dir "$HOME/.copilot/logs")
         
         # Debug: Show the full command being executed
@@ -251,16 +229,14 @@ runs:
         GH_TOKEN: ${{ inputs.github-token }}
         COPILOT_GITHUB_TOKEN: ${{ inputs.github-token }}
         PROMPT: ${{ inputs.prompt }}
-        LOG_LEVEL: ${{ inputs.log-level }}
         ALLOW_ALL_TOOLS: ${{ inputs.allow-all-tools }}
+        ALLOWED_TOOLS: ${{ inputs.allowed-tools }}
         DENIED_TOOLS: ${{ inputs.denied-tools }}
         MODEL: ${{ inputs.model }}
+        AGENT: ${{ inputs.agent }}
         ADDITIONAL_DIRS: ${{ inputs.additional-directories }}
         DISABLE_MCP_SERVERS: ${{ inputs.disable-mcp-servers }}
-        NO_COLOR: ${{ inputs.no-color }}
-        SCREEN_READER: ${{ inputs.screen-reader }}
         RESUME_SESSION: ${{ inputs.resume-session }}
-        SHOW_BANNER: ${{ inputs.show-banner }}
         TEMP: ${{ runner.temp }}
         GITHUB_WORKSPACE: ${{ github.workspace }}
     - name: Upload Copilot Artifacts
