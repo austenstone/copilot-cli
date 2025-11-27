@@ -12,6 +12,8 @@ jobs:
       - uses: austenstone/copilot-cli@main
         with:
           github-token: ${{ secrets.PAT }}
+          enable-all-github-mcp-tools: true
+          agent: ci-fixer
           prompt: |
             The GitHub Actions workflow run failed.
             Please analyze the failure and suggest a fix.

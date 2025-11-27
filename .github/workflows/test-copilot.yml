@@ -11,21 +11,6 @@ jobs:
         with:
           github-token: ${{ secrets.PAT }}
           enable-all-github-mcp-tools: true
-          # mcp-config: |
-          #   {
-          #     "mcpServers": {
-          #       "github-mcp-server": {
-          #         "type": "http",
-          #         "url": "https://api.githubcopilot.com/mcp/",
-          #         "headers": {
-          #           "Authorization": "Bearer ${{ secrets.PAT }}",
-          #           "X-MCP-Toolsets": "*"
-          #         },
-          #         "tools": ["*"]
-          #       }
-          #     }
-          #   }
-          agent: ci-fixer
           prompt: |
             Who are you?
 
