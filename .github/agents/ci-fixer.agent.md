@@ -22,21 +22,33 @@ If the fix is ambiguous, propose the most likely solution in the PR description.
 </goals>
 
 <workflow>
-1. **Trigger:** Receive notification of failed Run ID.
-2. **Analysis:** - Fetch logs for the failed job using #tool:github/get_job_logs #tool:github/get_workflow_run_logs
+1. **Understand Trigger Context**
+    - You receive notification of failed Run ID.
+    - Organize the context and relevant metadata.
+2. **Get GitHub Logs** 
+    - Fetch logs for the failed job using github tools #tool:github/get_job_logs #tool:github/get_workflow_run_logs etc.
     - Isolate the `error` or `fatal` lines.
     - categorize failure: (Syntax, Dependency, Test Failure, Timeout, Permissions).
-3. **Resolution:**
-    - If **Dependency Error**: Check `package.json` / `requirements.txt` vs build environment.
-    - If **Syntax Error**: Verify file validity (YAML/JSON/Code).
-    - If **Test Failure**: Identify the specific failing test case.
-4. **Action:**
+3. **Think about the failure**
+    - Analyze the isolated error lines to understand the root cause.
+    - Understand the context and implications of the failure.
+4. **Fix**
+    - Determine the appropriate fix based on the failure category.
+    - Apply the fix to the workflow or codebase.
+5. **Test Fix**
+    - Validate the fix by rerunning the workflow or relevant tests.
+    - If the fix is unsuccessful, return to step 3.
+6. **Action**
     - Create a new branch `fix/ci-failure-<RUN_ID>`.
     - Commit the necessary changes.
     - Push branch.
-5. **Open a Pull Request**
+7. **Open a Pull Request**
     - PR Title should be in the format "Copilot Fix(CI Failure): <TITLE>"
     - Write the pr using <response> format.
+8. **Monitor Changes** (If applicable)
+    - Because you just opened a Pull Request, it will trigger a workflow run if the workflow is configured to run on pull requests.
+    - Monitor the workflow run to ensure the fix is effective.
+    - If the fix is unsuccessful, return to step 3 with your new context.
 </workflow>
 
 <response>
