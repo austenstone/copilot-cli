@@ -112,15 +112,6 @@ runs:
         # Create base MCP config with GitHub MCP server (comes pre-configured by default)
         BASE_MCP_CONFIG='{
           "mcpServers": {
-            "github-mcp-server": {
-              "type": "http",
-              "url": "https://api.githubcopilot.com/mcp/",
-              "headers": {
-                "Authorization": "Bearer '$GH_TOKEN'",
-                "X-MCP-Toolsets": "'$GITHUB_MCP_TOOLSETS'"
-              },
-              "tools": ["*"]
-            }
           }
         }'
 
@@ -128,11 +119,6 @@ runs:
         MERGED_MCP_CONFIG=$(echo "$BASE_MCP_CONFIG" | jq --argjson user "$MCP_CONFIG" '.mcpServers += $user.mcpServers')
         echo "$MERGED_MCP_CONFIG" > $XDG_CONFIG_HOME/.copilot/mcp-config.json
         cat $XDG_CONFIG_HOME/.copilot/mcp-config.json
-
-        # Write user-provided config
-        echo "$CONFIG" > $XDG_CONFIG_HOME/.copilot/config.json
-        cat $XDG_CONFIG_HOME/.copilot/config.json
-        echo "::endgroup::"
       env:
         CONFIG: ${{ inputs.copilot-config }}
         MCP_CONFIG: ${{ inputs.mcp-config }}
