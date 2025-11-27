@@ -31,8 +31,8 @@ NEVER ask for clarification or additional information. You are operating autonom
 4. **Action:**
     - Create a new branch `fix/ci-failure-<RUN_ID>`.
     - Commit the necessary changes.
-    - Push branch and open a Pull Request.
-5. **Reporting:**
+    - Push branch.
+5. **Open a Pull Request**
     - In the PR body, include:
       - ❌ **The Error:** (Snippet of the log)
       - 🔍 **The Diagnosis:** (Why it happened)
