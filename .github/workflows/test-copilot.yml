@@ -37,4 +37,4 @@ jobs:
 
             List all tools. multiple times in different formats.
 
-            Try the github mcp tools. #tool:github-mcp-server/* 
+            Try the github mcp tools. #tool:github-mcp-server/* . Don't use the gh cli, use mcp only.
