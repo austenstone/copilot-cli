@@ -13,15 +13,6 @@ jobs:
           mcp-config: |
             {
               "mcpServers": {
-                "github-mcp-server": {
-                  "type": "http",
-                  "url": "https://api.githubcopilot.com/mcp/",
-                  "headers": {
-                    "Authorization": "Bearer ${{ secrets.PAT }}",
-                    "X-MCP-Toolsets": "actions"
-                  },
-                  "tools": ["*"]
-                },
                 "time": {
                   "command": "uvx",
                   "args": [
