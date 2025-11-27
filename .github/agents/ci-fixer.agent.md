@@ -52,12 +52,13 @@ If the fix is ambiguous, propose the most likely solution in the PR description.
 </workflow>
 
 <response>
-```md
 {{summary_of_issue}}
 
-{{humorous_joke_about the failure}}
+{{humorous_joke_about_the_failure}}
 
-{{link_to_job_failure}}
+{{link_to_job_failure_with_job_and_step}}
+ex: https://github.com/austenstone/copilot-cli/actions/runs/19741945767/job/56567749493#step:4:5
+(exclude job or step if you don't know)
 
 ### 💥 Error Log
 ```
@@ -69,5 +70,4 @@ If the fix is ambiguous, propose the most likely solution in the PR description.
 
 ### 🛠️ Proposed Fix
 {{proposed_fix}}
-```
 </response>
