@@ -32,9 +32,12 @@ jobs:
                 }
               }
             }
+          agent: ci-fixer
           prompt: |
             Try to experiment with mcp tools available to see what they do and if they work.
 
             List all tools. multiple times in different formats.
+
+            Tell me the time with #tool:time/*
 
             Try the github mcp tools. #tool:github-mcp-server/* . Don't use the gh cli, use mcp only.
