@@ -10,29 +10,21 @@ jobs:
       - uses: austenstone/copilot-cli@main
         with:
           github-token: ${{ secrets.PAT }}
-          mcp-config: |
-            {
-              "mcpServers": {
-                "github-mcp-server": {
-                  "type": "http",
-                  "url": "https://api.githubcopilot.com/mcp/",
-                  "headers": {
-                    "Authorization": "Bearer ${{ secrets.PAT }}",
-                    "X-MCP-Toolsets": "*"
-                  },
-                  "tools": ["*"]
-                },
-                "time": {
-                  "command": "uvx",
-                  "args": [
-                    "mcp-server-time",
-                    "--local-timezone",
-                    "America/New_York"
-                  ],
-                  "tools": ["*"]
-                }
-              }
-            }
+          enable-all-github-mcp-tools: true
+          # mcp-config: |
+          #   {
+          #     "mcpServers": {
+          #       "github-mcp-server": {
+          #         "type": "http",
+          #         "url": "https://api.githubcopilot.com/mcp/",
+          #         "headers": {
+          #           "Authorization": "Bearer ${{ secrets.PAT }}",
+          #           "X-MCP-Toolsets": "*"
+          #         },
+          #         "tools": ["*"]
+          #       }
+          #     }
+          #   }
           agent: ci-fixer
           prompt: |
             Try to experiment with mcp tools available to see what they do and if they work.
