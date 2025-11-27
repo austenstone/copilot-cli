@@ -1,6 +1,6 @@
 on:
   workflow_run:
-    # workflows: [CI] # add workflows here or remove for all workflows
+    workflows: ['*'] # All workflow failures
     types: [completed]
 
 jobs:
