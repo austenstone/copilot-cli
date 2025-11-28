@@ -78,95 +78,82 @@ outputs:
 runs:
   using: 'composite'
   steps:
-    - name: Verify GitHub Auth
-      shell: bash
-      run: gh auth status
-      env:
-        GH_TOKEN: ${{ inputs.copilot-token }}
     - uses: actions/setup-node@v6
       with:
         node-version: '22'
-    - name: Install GitHub Copilot CLI
+    - name: Run GitHub Copilot CLI
+      id: copilot
+      shell: bash
       run: |
+        echo "::group::Verify GitHub Auth"
+        gh auth status
+        echo "::endgroup::"
+        
+        echo "::group::Install GitHub Copilot CLI"
         if [ "$COPILOT_VERSION" = "latest" ]; then
           npm install -g @github/copilot
         else
           npm install -g @github/copilot@$COPILOT_VERSION
         fi
-        copilot --version || echo "Warning: Could not get copilot version"
-      shell: bash
-      env:
-        COPILOT_VERSION: ${{ inputs.copilot-version }}
-    - name: Configure Copilot MCP
-      if: inputs.mcp-config
-      shell: bash
-      run: |
-        cat $XDG_CONFIG_HOME/.copilot/mcp-config.json || echo "No existing MCP config found"
-        mkdir -p $XDG_CONFIG_HOME/.copilot
-        
-        # Create base MCP config with GitHub MCP server (comes pre-configured by default)
-        BASE_MCP_CONFIG='{
-          "mcpServers": { }
-        }'
+        echo "::endgroup::"
 
-        # Merge user-provided MCP config with base config
-        MERGED_MCP_CONFIG=$(echo "$BASE_MCP_CONFIG" | jq --argjson user "$MCP_CONFIG" '.mcpServers += $user.mcpServers')
-        echo "$MERGED_MCP_CONFIG" > $XDG_CONFIG_HOME/.copilot/mcp-config.json
-        cat $XDG_CONFIG_HOME/.copilot/mcp-config.json
-      env:
-        CONFIG: ${{ inputs.copilot-config }}
-        MCP_CONFIG: ${{ inputs.mcp-config }}
-    - name: Build Copilot Args
-      shell: bash
-      run: |
+        copilot --version || echo "Warning: Could not get copilot version"
+        
+        echo "::group::Configure Copilot MCP"
+        if [ -n "$MCP_CONFIG" ]; then
+          cat $XDG_CONFIG_HOME/.copilot/mcp-config.json || echo "No existing MCP config found"
+          mkdir -p $XDG_CONFIG_HOME/.copilot
+          
+          BASE_MCP_CONFIG='{
+            "mcpServers": { }
+          }'
+
+          MERGED_MCP_CONFIG=$(echo "$BASE_MCP_CONFIG" | jq --argjson user "$MCP_CONFIG" '.mcpServers += $user.mcpServers')
+          echo "$MERGED_MCP_CONFIG" > $XDG_CONFIG_HOME/.copilot/mcp-config.json
+          cat $XDG_CONFIG_HOME/.copilot/mcp-config.json
+        fi
+        echo "::endgroup::"
+        
+        echo "::group::Build Copilot Args"
         COPILOT_ARGS=""
 
         COPILOT_ARGS+="--add-dir / "
-        
         if [ -n "$ADDITIONAL_DIRS" ]; then
           IFS=',' read -ra DIRS <<< "$ADDITIONAL_DIRS"
           for dir in "${DIRS[@]}"; do
             COPILOT_ARGS+="--add-dir $dir "
           done
         fi
-        
         if [ -n "$DISABLE_MCP_SERVERS" ]; then
           IFS=',' read -ra SERVERS <<< "$DISABLE_MCP_SERVERS"
           for server in "${SERVERS[@]}"; do
             COPILOT_ARGS+="--disable-mcp-server $server "
           done
         fi
-        
         if [ "$ENABLE_ALL_GITHUB_MCP_TOOLS" = "true" ]; then
           COPILOT_ARGS+="--enable-all-github-mcp-tools "
         fi
-        
         if [ "$ALLOW_ALL_TOOLS" = "true" ]; then
           COPILOT_ARGS+="--allow-all-tools "
         fi
-        
         if [ -n "$ALLOWED_TOOLS" ]; then
           IFS=',' read -ra TOOLS <<< "$ALLOWED_TOOLS"
           for tool in "${TOOLS[@]}"; do
             COPILOT_ARGS+="--allow-tool $tool "
           done
         fi
-        
         if [ -n "$DENIED_TOOLS" ]; then
           IFS=',' read -ra TOOLS <<< "$DENIED_TOOLS"
           for tool in "${TOOLS[@]}"; do
             COPILOT_ARGS+="--deny-tool $tool "
           done
         fi
-        
         if [ -n "$MODEL" ]; then
           COPILOT_ARGS+="--model $MODEL "
         fi
-        
         if [ -n "$AGENT" ]; then
           COPILOT_ARGS+="--agent $AGENT "
         fi
-        
         if [ -n "$RESUME_SESSION" ]; then
           if [ "$RESUME_SESSION" = "latest" ]; then
             COPILOT_ARGS+="--continue "
@@ -174,16 +161,29 @@ runs:
             COPILOT_ARGS+="--resume $RESUME_SESSION "
           fi
         fi
-        
         if [ -n "$LOG_LEVEL" ]; then
           COPILOT_ARGS+="--log-level $LOG_LEVEL "
         fi
         COPILOT_ARGS+="--log-dir $HOME/.copilot/logs"
-        
+
         echo "$COPILOT_ARGS"
-        
-        echo "COPILOT_ARGS=$COPILOT_ARGS" >> "$GITHUB_ENV"
+        echo "::endgroup::"
+
+        echo "::group::Run Copilot CLI"
+        set +e
+        copilot -p "$PROMPT" $COPILOT_ARGS
+        EXIT_CODE=$?
+        echo "::endgroup::"
+
+        echo "logs_path=$HOME/.copilot/logs" >> $GITHUB_OUTPUT
+        echo "exit_code=$EXIT_CODE" >> $GITHUB_OUTPUT
       env:
+        GH_TOKEN: ${{ inputs.repo-token || inputs.copilot-token }}
+        COPILOT_GITHUB_TOKEN: ${{ inputs.copilot-token }}
+        PROMPT: ${{ inputs.prompt }}
+        COPILOT_VERSION: ${{ inputs.copilot-version }}
+        CONFIG: ${{ inputs.copilot-config }}
+        MCP_CONFIG: ${{ inputs.mcp-config }}
         ALLOW_ALL_TOOLS: ${{ inputs.allow-all-tools }}
         ALLOWED_TOOLS: ${{ inputs.allowed-tools }}
         DENIED_TOOLS: ${{ inputs.denied-tools }}
@@ -194,22 +194,6 @@ runs:
         ENABLE_ALL_GITHUB_MCP_TOOLS: ${{ inputs.enable-all-github-mcp-tools }}
         RESUME_SESSION: ${{ inputs.resume-session }}
         LOG_LEVEL: ${{ inputs.log-level }}
-    - name: Run Copilot CLI
-      id: copilot
-      shell: bash
-      run: |
-        set +e
-
-        copilot -p "$PROMPT" $COPILOT_ARGS
-        EXIT_CODE=$?
-        
-        # Set outputs
-        echo "logs_path=$HOME/.copilot/logs" >> $GITHUB_OUTPUT
-        echo "exit_code=$EXIT_CODE" >> $GITHUB_OUTPUT
-      env:
-        GH_TOKEN: ${{ inputs.repo-token || inputs.copilot-token }}
-        COPILOT_GITHUB_TOKEN: ${{ inputs.copilot-token }}
-        PROMPT: ${{ inputs.prompt }}
     - name: Upload Copilot Artifacts
       uses: actions/upload-artifact@v4
       if: ${{ always() && inputs.upload-artifact == 'true' }}
