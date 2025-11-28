@@ -14,7 +14,6 @@ jobs:
       - uses: austenstone/copilot-cli@main
         with:
           copilot-token: ${{ secrets.PAT }}
-          # enable-all-github-mcp-tools: true
           mcp-config: |
             {
               "mcpServers": {
