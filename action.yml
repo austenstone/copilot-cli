@@ -92,14 +92,12 @@ runs:
     #       ${{ runner.os }}-copilot-cli-
     - name: Install GitHub Copilot CLI
       run: |
-        echo "::group::Installing GitHub Copilot CLI"
         if [ "$COPILOT_VERSION" = "latest" ]; then
           npm install -g @github/copilot
         else
           npm install -g @github/copilot@$COPILOT_VERSION
         fi
         copilot --version || echo "Warning: Could not get copilot version"
-        echo "::endgroup::"
       shell: bash
       env:
         COPILOT_VERSION: ${{ inputs.copilot-version }}
@@ -107,7 +105,6 @@ runs:
       if: inputs.mcp-config
       shell: bash
       run: |
-        echo "::group::Configuring Copilot"
         cat $XDG_CONFIG_HOME/.copilot/mcp-config.json || echo "No existing MCP config found"
         mkdir -p $XDG_CONFIG_HOME/.copilot
         
@@ -127,9 +124,7 @@ runs:
       id: copilot
       shell: bash
       run: |
-        echo "::group::Verifying GitHub CLI authentication"
         gh auth status
-        echo "::endgroup::"
 
         set +e  # Don't exit on error
         
@@ -205,7 +200,7 @@ runs:
         
         # Debug: Show the full command being executed
         echo "::group::GitHub Copilot CLI command"
-        printf '%s\n' "${COPILOT_ARGS[@]}"
+        printf '%s ' "${COPILOT_ARGS[@]}"
         echo "::endgroup::"
         
         # Execute the command with array expansion for proper quoting
