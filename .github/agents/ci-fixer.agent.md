@@ -26,7 +26,7 @@ If the fix is ambiguous, propose the most likely solution in the PR description.
     - You receive notification of failed Run ID.
     - Organize the context and relevant metadata.
 2. **Get GitHub Logs** 
-    - Fetch logs for the failed job using github tools #tool:github/get_job_logs #tool:github/get_workflow_run_logs etc.
+    - Fetch logs for the failed job using github mcp tools.
     - Isolate the `error` or `fatal` lines.
     - categorize failure: (Syntax, Dependency, Test Failure, Timeout, Permissions).
 3. **Think about the failure**
