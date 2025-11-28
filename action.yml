@@ -4,9 +4,13 @@ branding:
   icon: 'cpu'
   color: 'purple'
 inputs:
-  github-token:
+  copilot-token:
     description: 'GitHub Personal Access Token (PAT) with "Copilot Requests" permission. The default github.token does NOT have Copilot access - you must provide a PAT with the "Copilot Requests" scope. See: https://github.com/settings/tokens/new?scopes=copilot'
     required: true
+  repo-token:
+    description: 'Token for standard GitHub repository operations (e.g., pushing commits, creating PRs). Defaults to copilot-token if not specified. You can use the default GITHUB_TOKEN here if you only need repo access.'
+    required: false
+    default: ${{ github.token }}
   prompt:
     description: 'Prompt to send to GitHub Copilot'
     required: true
@@ -121,7 +125,6 @@ runs:
       env:
         CONFIG: ${{ inputs.copilot-config }}
         MCP_CONFIG: ${{ inputs.mcp-config }}
-        GH_TOKEN: ${{ inputs.github-token }}
     - name: Run Copilot CLI
       id: copilot
       shell: bash
@@ -215,8 +218,8 @@ runs:
         echo "logs_path=$HOME/.copilot/logs" >> $GITHUB_OUTPUT
         echo "exit_code=$EXIT_CODE" >> $GITHUB_OUTPUT
       env:
-        GH_TOKEN: ${{ inputs.github-token }}
-        COPILOT_GITHUB_TOKEN: ${{ inputs.github-token }}
+        GH_TOKEN: ${{ inputs.repo-token || inputs.copilot-token }}
+        COPILOT_GITHUB_TOKEN: ${{ inputs.copilot-token }}
         PROMPT: ${{ inputs.prompt }}
         ALLOW_ALL_TOOLS: ${{ inputs.allow-all-tools }}
         ALLOWED_TOOLS: ${{ inputs.allowed-tools }}

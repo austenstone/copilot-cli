@@ -15,7 +15,7 @@ jobs:
       - name: Run Copilot
         uses: austenstone/copilot-cli@main
         with:
-          github-token: ${{ secrets.PAT }}
+          copilot-token: ${{ secrets.PAT }}
           prompt: |
             ${{ steps.sanitize.outputs.prompt }}
 

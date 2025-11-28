@@ -48,7 +48,7 @@ jobs:
           ISSUE_BODY: '${{ github.event.issue.body }}'
           AVAILABLE_LABELS: '${{ steps.get_labels.outputs.available_labels }}'
         with:
-          github-token: ${{ secrets.PAT }}
+          copilot-token: ${{ secrets.PAT }}
           prompt: |
             ## Role
 

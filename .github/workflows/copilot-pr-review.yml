@@ -10,7 +10,7 @@ jobs:
       - uses: actions/checkout@v6
       - uses: austenstone/copilot-cli@main
         with:
-          github-token: ${{ secrets.PAT }}
+          copilot-token: ${{ secrets.PAT }}
           prompt: |
             ## Role
 
