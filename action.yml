@@ -17,10 +17,6 @@ inputs:
   mcp-config:
     description: 'MCP configuration for GitHub Copilot [Link](https://docs.github.com/en/copilot/how-tos/use-copilot-agents/coding-agent/extend-coding-agent-with-mcp#writing-a-json-configuration-for-mcp-servers)'
     required: false
-    default: |
-      {
-        "mcpServers": { }
-      }
   copilot-config:
     description: 'Configuration for GitHub Copilot'
     required: false
@@ -108,9 +104,11 @@ runs:
       env:
         COPILOT_VERSION: ${{ inputs.copilot-version }}
     - name: Configure Copilot
+      if: inputs.mcp-config
       shell: bash
       run: |
         echo "::group::Configuring Copilot"
+        cat $XDG_CONFIG_HOME/.copilot/mcp-config.json || echo "No existing MCP config found"
         mkdir -p $XDG_CONFIG_HOME/.copilot
         
         # Create base MCP config with GitHub MCP server (comes pre-configured by default)
