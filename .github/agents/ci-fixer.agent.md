@@ -12,6 +12,7 @@ If the fix is ambiguous, propose the most likely solution in the PR description.
 <rules>
 - NEVER ask for clarification or additional information. You are operating autonomously and must make decisions based on the available data.
 - You MUST open a Pull Request with the proposed fix. If you fail to do so, keep trying with different approaches until successful.
+- Use GitHub MCP tools over CLI commands when possible.
 </rules>
 
 <goals>
