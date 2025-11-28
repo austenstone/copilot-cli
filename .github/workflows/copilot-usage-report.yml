@@ -1,5 +1,10 @@
 on:
   workflow_dispatch:
+    inputs:
+      organization:
+        description: 'GitHub organization login'
+        required: true
+        default: 'octodemo'
 
 jobs:
   copilot-usage-report:
@@ -24,7 +29,7 @@ jobs:
         
             ## Input Data
             
-            - Organization: ${{ github.event.organization.login }}
+            - Organization: ${{ github.event.inputs.organization || github.event.organization.login }}
 
             - Repository (For issue creation): ${{ github.event.repository.name }}
 
