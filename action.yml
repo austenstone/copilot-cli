@@ -169,6 +169,10 @@ runs:
         echo "$COPILOT_ARGS"
         echo "::endgroup::"
 
+        echo "::group::Prompt"
+        echo "$PROMPT"
+        echo "::endgroup::"
+
         echo "::group::Run Copilot CLI"
         set +e
         copilot -p "$PROMPT" $COPILOT_ARGS
