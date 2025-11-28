@@ -85,6 +85,7 @@ runs:
       id: copilot
       shell: bash
       run: |
+        # Script
         echo "::group::Verify GitHub Auth"
         gh auth status
         echo "::endgroup::"
@@ -95,12 +96,11 @@ runs:
         else
           npm install -g @github/copilot@$COPILOT_VERSION
         fi
+        echo "CLI Version: $(copilot --version)"
         echo "::endgroup::"
-
-        copilot --version || echo "Warning: Could not get copilot version"
         
-        echo "::group::Configure Copilot MCP"
         if [ -n "$MCP_CONFIG" ]; then
+          echo "::group::Configure Copilot MCP"
           cat $XDG_CONFIG_HOME/.copilot/mcp-config.json || echo "No existing MCP config found"
           mkdir -p $XDG_CONFIG_HOME/.copilot
           
@@ -111,8 +111,8 @@ runs:
           MERGED_MCP_CONFIG=$(echo "$BASE_MCP_CONFIG" | jq --argjson user "$MCP_CONFIG" '.mcpServers += $user.mcpServers')
           echo "$MERGED_MCP_CONFIG" > $XDG_CONFIG_HOME/.copilot/mcp-config.json
           cat $XDG_CONFIG_HOME/.copilot/mcp-config.json
+          echo "::endgroup::"
         fi
-        echo "::endgroup::"
         
         echo "::group::Build Copilot Args"
         COPILOT_ARGS=""
