@@ -3,6 +3,9 @@ on:
     workflows: ['*'] # All workflow failures
     types: [completed]
 
+permissions: write-all
+  
+
 jobs:
   ci-failure:
     runs-on: ubuntu-latest
