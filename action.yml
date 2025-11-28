@@ -115,13 +115,10 @@ runs:
     - name: Build Copilot Args
       shell: bash
       run: |
-        # Build args for copilot command
         COPILOT_ARGS=""
 
-        # Pre-trust common paths that Copilot might need in CI environment
         COPILOT_ARGS+="--add-dir / "
         
-        # Add additional trusted directories
         if [ -n "$ADDITIONAL_DIRS" ]; then
           IFS=',' read -ra DIRS <<< "$ADDITIONAL_DIRS"
           for dir in "${DIRS[@]}"; do
@@ -129,7 +126,6 @@ runs:
           done
         fi
         
-        # Add disabled MCP servers
         if [ -n "$DISABLE_MCP_SERVERS" ]; then
           IFS=',' read -ra SERVERS <<< "$DISABLE_MCP_SERVERS"
           for server in "${SERVERS[@]}"; do
@@ -137,17 +133,14 @@ runs:
           done
         fi
         
-        # Enable all GitHub MCP tools
         if [ "$ENABLE_ALL_GITHUB_MCP_TOOLS" = "true" ]; then
           COPILOT_ARGS+="--enable-all-github-mcp-tools "
         fi
         
-        # Add tool permissions
         if [ "$ALLOW_ALL_TOOLS" = "true" ]; then
           COPILOT_ARGS+="--allow-all-tools "
         fi
         
-        # Add allowed tools
         if [ -n "$ALLOWED_TOOLS" ]; then
           IFS=',' read -ra TOOLS <<< "$ALLOWED_TOOLS"
           for tool in "${TOOLS[@]}"; do
@@ -155,7 +148,6 @@ runs:
           done
         fi
         
-        # Add denied tools
         if [ -n "$DENIED_TOOLS" ]; then
           IFS=',' read -ra TOOLS <<< "$DENIED_TOOLS"
           for tool in "${TOOLS[@]}"; do
@@ -163,17 +155,14 @@ runs:
           done
         fi
         
-        # Add model selection
         if [ -n "$MODEL" ]; then
           COPILOT_ARGS+="--model $MODEL "
         fi
         
-        # Add agent selection
         if [ -n "$AGENT" ]; then
           COPILOT_ARGS+="--agent $AGENT "
         fi
         
-        # Add resume session
         if [ -n "$RESUME_SESSION" ]; then
           if [ "$RESUME_SESSION" = "latest" ]; then
             COPILOT_ARGS+="--continue "
@@ -182,15 +171,10 @@ runs:
           fi
         fi
         
-        # Add other options
         COPILOT_ARGS+="--log-dir $HOME/.copilot/logs"
         
-        # Debug: Show the args
-        echo "::group::GitHub Copilot CLI args"
         echo "$COPILOT_ARGS"
-        echo "::endgroup::"
         
-        # Export args for subsequent steps
         echo "COPILOT_ARGS=$COPILOT_ARGS" >> "$GITHUB_ENV"
       env:
         ALLOW_ALL_TOOLS: ${{ inputs.allow-all-tools }}
@@ -207,7 +191,7 @@ runs:
       shell: bash
       run: |
         set +e
-        
+
         copilot -p "$PROMPT" $COPILOT_ARGS
         EXIT_CODE=$?
         
