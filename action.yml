@@ -74,22 +74,14 @@ outputs:
 runs:
   using: 'composite'
   steps:
+    - name: Verify GitHub Auth
+      shell: bash
+      run: gh auth status
+      env:
+        GH_TOKEN: ${{ inputs.copilot-token }}
     - uses: actions/setup-node@v6
       with:
         node-version: '22'
-    # - name: Configure Git credentials
-    #   run: |
-    #     git config --global user.email "github-actions[bot]@users.noreply.github.com"
-    #     git config --global user.name "${{ github.workflow }}"
-    #   shell: bash
-    # - name: Cache Copilot CLI
-    #   uses: actions/cache@v4
-    #   if: ${{ inputs.cache-cli == 'true' }}
-    #   with:
-    #     path: ~/.npm
-    #     key: ${{ runner.os }}-copilot-cli-${{ inputs.copilot-version }}
-    #     restore-keys: |
-    #       ${{ runner.os }}-copilot-cli-
     - name: Install GitHub Copilot CLI
       run: |
         if [ "$COPILOT_VERSION" = "latest" ]; then
@@ -101,7 +93,7 @@ runs:
       shell: bash
       env:
         COPILOT_VERSION: ${{ inputs.copilot-version }}
-    - name: Configure Copilot
+    - name: Configure Copilot MCP
       if: inputs.mcp-config
       shell: bash
       run: |
@@ -120,25 +112,20 @@ runs:
       env:
         CONFIG: ${{ inputs.copilot-config }}
         MCP_CONFIG: ${{ inputs.mcp-config }}
-    - name: Run Copilot CLI
-      id: copilot
+    - name: Build Copilot Args
       shell: bash
       run: |
-        gh auth status
-
-        set +e  # Don't exit on error
-        
-        # Build args array for safer execution with multi-line prompts
-        COPILOT_ARGS=(-p "$PROMPT")
+        # Build args for copilot command
+        COPILOT_ARGS=""
 
         # Pre-trust common paths that Copilot might need in CI environment
-        COPILOT_ARGS+=(--add-dir "/")
+        COPILOT_ARGS+="--add-dir / "
         
         # Add additional trusted directories
         if [ -n "$ADDITIONAL_DIRS" ]; then
           IFS=',' read -ra DIRS <<< "$ADDITIONAL_DIRS"
           for dir in "${DIRS[@]}"; do
-            COPILOT_ARGS+=(--add-dir "$dir")
+            COPILOT_ARGS+="--add-dir $dir "
           done
         fi
         
@@ -146,25 +133,25 @@ runs:
         if [ -n "$DISABLE_MCP_SERVERS" ]; then
           IFS=',' read -ra SERVERS <<< "$DISABLE_MCP_SERVERS"
           for server in "${SERVERS[@]}"; do
-            COPILOT_ARGS+=(--disable-mcp-server "$server")
+            COPILOT_ARGS+="--disable-mcp-server $server "
           done
         fi
         
         # Enable all GitHub MCP tools
         if [ "$ENABLE_ALL_GITHUB_MCP_TOOLS" = "true" ]; then
-          COPILOT_ARGS+=(--enable-all-github-mcp-tools)
+          COPILOT_ARGS+="--enable-all-github-mcp-tools "
         fi
         
         # Add tool permissions
         if [ "$ALLOW_ALL_TOOLS" = "true" ]; then
-          COPILOT_ARGS+=(--allow-all-tools)
+          COPILOT_ARGS+="--allow-all-tools "
         fi
         
         # Add allowed tools
         if [ -n "$ALLOWED_TOOLS" ]; then
           IFS=',' read -ra TOOLS <<< "$ALLOWED_TOOLS"
           for tool in "${TOOLS[@]}"; do
-            COPILOT_ARGS+=(--allow-tool "$tool")
+            COPILOT_ARGS+="--allow-tool $tool "
           done
         fi
         
@@ -172,48 +159,40 @@ runs:
         if [ -n "$DENIED_TOOLS" ]; then
           IFS=',' read -ra TOOLS <<< "$DENIED_TOOLS"
           for tool in "${TOOLS[@]}"; do
-            COPILOT_ARGS+=(--deny-tool "$tool")
+            COPILOT_ARGS+="--deny-tool $tool "
           done
         fi
         
         # Add model selection
         if [ -n "$MODEL" ]; then
-          COPILOT_ARGS+=(--model "$MODEL")
+          COPILOT_ARGS+="--model $MODEL "
         fi
         
         # Add agent selection
         if [ -n "$AGENT" ]; then
-          COPILOT_ARGS+=(--agent "$AGENT")
+          COPILOT_ARGS+="--agent $AGENT "
         fi
         
         # Add resume session
         if [ -n "$RESUME_SESSION" ]; then
           if [ "$RESUME_SESSION" = "latest" ]; then
-            COPILOT_ARGS+=(--continue)
+            COPILOT_ARGS+="--continue "
           else
-            COPILOT_ARGS+=(--resume "$RESUME_SESSION")
+            COPILOT_ARGS+="--resume $RESUME_SESSION "
           fi
         fi
         
         # Add other options
-        COPILOT_ARGS+=(--log-dir "$HOME/.copilot/logs")
+        COPILOT_ARGS+="--log-dir $HOME/.copilot/logs"
         
-        # Debug: Show the full command being executed
-        echo "::group::GitHub Copilot CLI command"
-        printf '%s ' "${COPILOT_ARGS[@]}"
+        # Debug: Show the args
+        echo "::group::GitHub Copilot CLI args"
+        echo "$COPILOT_ARGS"
         echo "::endgroup::"
         
-        # Execute the command with array expansion for proper quoting
-        copilot "${COPILOT_ARGS[@]}"
-        EXIT_CODE=$?
-        
-        # Set outputs
-        echo "logs_path=$HOME/.copilot/logs" >> $GITHUB_OUTPUT
-        echo "exit_code=$EXIT_CODE" >> $GITHUB_OUTPUT
+        # Export args for subsequent steps
+        echo "COPILOT_ARGS=$COPILOT_ARGS" >> "$GITHUB_ENV"
       env:
-        GH_TOKEN: ${{ inputs.repo-token || inputs.copilot-token }}
-        COPILOT_GITHUB_TOKEN: ${{ inputs.copilot-token }}
-        PROMPT: ${{ inputs.prompt }}
         ALLOW_ALL_TOOLS: ${{ inputs.allow-all-tools }}
         ALLOWED_TOOLS: ${{ inputs.allowed-tools }}
         DENIED_TOOLS: ${{ inputs.denied-tools }}
@@ -223,8 +202,22 @@ runs:
         DISABLE_MCP_SERVERS: ${{ inputs.disable-mcp-servers }}
         ENABLE_ALL_GITHUB_MCP_TOOLS: ${{ inputs.enable-all-github-mcp-tools }}
         RESUME_SESSION: ${{ inputs.resume-session }}
-        TEMP: ${{ runner.temp }}
-        GITHUB_WORKSPACE: ${{ github.workspace }}
+    - name: Run Copilot CLI
+      id: copilot
+      shell: bash
+      run: |
+        set +e
+        
+        copilot -p "$PROMPT" $COPILOT_ARGS
+        EXIT_CODE=$?
+        
+        # Set outputs
+        echo "logs_path=$HOME/.copilot/logs" >> $GITHUB_OUTPUT
+        echo "exit_code=$EXIT_CODE" >> $GITHUB_OUTPUT
+      env:
+        GH_TOKEN: ${{ inputs.repo-token || inputs.copilot-token }}
+        COPILOT_GITHUB_TOKEN: ${{ inputs.copilot-token }}
+        PROMPT: ${{ inputs.prompt }}
     - name: Upload Copilot Artifacts
       uses: actions/upload-artifact@v4
       if: ${{ always() && inputs.upload-artifact == 'true' }}
