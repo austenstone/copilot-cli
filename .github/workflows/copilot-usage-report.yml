@@ -13,7 +13,7 @@ jobs:
       - uses: austenstone/copilot-cli@main
         with:
           copilot-token: ${{ secrets.PAT }}
-          repo-token: ${{ secrets.PAT }}
+          repo-token: ${{ secrets.PAT2 }}
           prompt: |
             ## Role
 
