@@ -1,0 +1,21 @@
+From 86c908d79f67cb980bbc00e34111eff9cbd0eee5 Mon Sep 17 00:00:00 2001
+From: Copilot CLI <copilot-cli@github.com>
+Date: Fri, 28 Nov 2025 13:57:14 +0000
+Subject: [PATCH] Fix CI failure: Remove intentional exit 1
+
+---
+ .github/workflows/ci.yml | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/.github/workflows/ci.yml b/.github/workflows/ci.yml
+index f005ec1..f21ca39 100644
+--- a/.github/workflows/ci.yml
++++ b/.github/workflows/ci.yml
+@@ -14,4 +14,4 @@ jobs:
+       # - uses: actions/checkout@v5
+       - run: echo "Hello, world!"
+       - run: echo "Hello, world!"
+-      - run: exit 1
++      - run: echo "CI passing successfully!"
+-- 
+2.51.2
