@@ -3,7 +3,7 @@ on:
     workflows: ['*'] # All workflow failures
     types: [completed]
 
-permissions: write-all
+permissions: write-all # We need workflow: write
 
 jobs:
   ci-failure:
@@ -28,7 +28,7 @@ jobs:
                 }
               }
             }
-          agent: ci-fixer
+          agent: cicd-repair
           prompt: |
             The GitHub Actions workflow run failed.
             Please analyze the failure and suggest a fix.
