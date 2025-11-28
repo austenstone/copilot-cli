@@ -30,7 +30,7 @@ inputs:
   allow-all-tools:
     description: 'Allow all tools without approval'
     required: false
-    default: 'true'
+    default: true
   allowed-tools:
     description: 'Comma-separated list of tools to allow (e.g., "shell(rm),shell(git push)")'
     required: false
@@ -53,7 +53,7 @@ inputs:
   enable-all-github-mcp-tools:
     description: 'Enable all GitHub MCP tools'
     required: false
-    default: 'false'
+    default: false
   resume-session:
     description: 'Resume from a previous session ID (use "latest" for most recent)'
     required: false
@@ -68,6 +68,9 @@ inputs:
     description: 'Set the log level (choices: "none", "error", "warning", "info", "debug", "all", "default")'
     required: false
     default: 'all'
+  options:
+    description: 'Additional options to pass to the Copilot CLI (e.g., "--no-custom-instructions --screen-reader --no-color --model gpt-5")'
+    required: false
 outputs:
   logs-path:
     description: 'Path to the copilot logs directory'
@@ -86,7 +89,7 @@ runs:
       shell: bash
       run: |
         # Script
-                
+
         echo "::group::Install GitHub Copilot CLI"
         if [ "$COPILOT_VERSION" = "latest" ]; then
           npm install -g @github/copilot
@@ -161,6 +164,9 @@ runs:
         if [ -n "$LOG_LEVEL" ]; then
           COPILOT_ARGS+="--log-level $LOG_LEVEL "
         fi
+        if [ -n "$EXTRA_ARGS" ]; then
+          COPILOT_ARGS+="$EXTRA_ARGS "
+        fi
         COPILOT_ARGS+="--log-dir $HOME/.copilot/logs"
 
         echo "$COPILOT_ARGS"
@@ -195,6 +201,7 @@ runs:
         ENABLE_ALL_GITHUB_MCP_TOOLS: ${{ inputs.enable-all-github-mcp-tools }}
         RESUME_SESSION: ${{ inputs.resume-session }}
         LOG_LEVEL: ${{ inputs.log-level }}
+        EXTRA_ARGS: ${{ inputs.options }}
     - name: Upload Copilot Artifacts
       uses: actions/upload-artifact@v4
       if: ${{ always() && inputs.upload-artifact == 'true' }}
