@@ -86,10 +86,7 @@ runs:
       shell: bash
       run: |
         # Script
-        echo "::group::Verify GitHub Auth"
-        gh auth status
-        echo "::endgroup::"
-        
+                
         echo "::group::Install GitHub Copilot CLI"
         if [ "$COPILOT_VERSION" = "latest" ]; then
           npm install -g @github/copilot
@@ -114,7 +111,7 @@ runs:
           echo "::endgroup::"
         fi
         
-        echo "::group::Build Copilot Args"
+        echo "::group::Copilot Options"
         COPILOT_ARGS=""
 
         COPILOT_ARGS+="--add-dir / "
