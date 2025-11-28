@@ -1,52 +1,25 @@
 on:
-  workflow_call:
-  schedule:
-    - cron: '0 * * * *' # Runs every hour
   issues:
-    types: [opened, edited, reopened]
+    types: [opened]
   pull_request:
+    types: [opened]
     branches:
       - 'main'
-  workflow_dispatch:
 
 jobs:
   triage:
     runs-on: ubuntu-latest
     timeout-minutes: 7
-    outputs:
-      available_labels: '${{ steps.get_labels.outputs.available_labels }}'
-      selected_labels: '${{ env.SELECTED_LABELS }}'
     permissions:
       contents: 'read'
       id-token: 'write'
       issues: 'read'
       pull-requests: 'read'
     steps:
-      - name: 'Get repository labels'
-        id: get_labels
-        uses: 'actions/github-script@main'
-        with:
-          script: |-
-            const { data: labels } = await github.rest.issues.listLabelsForRepo({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-            });
-
-            if (!labels || labels.length === 0) {
-              core.setFailed('There are no issue labels in this repository.')
-            }
-
-            const labelNames = labels.map(label => label.name).sort();
-            core.setOutput('available_labels', labelNames.join(','));
-            core.info(`Found ${labelNames.length} labels: ${labelNames.join(', ')}`);
-            return labelNames;
       - uses: austenstone/copilot-cli@main
-        if: steps.get_labels.outputs.available_labels != ''
         env:
-          GITHUB_TOKEN: '' # Do NOT pass any auth tokens here since this runs on untrusted inputs
           ISSUE_TITLE: '${{ github.event.issue.title }}'
           ISSUE_BODY: '${{ github.event.issue.body }}'
-          AVAILABLE_LABELS: '${{ steps.get_labels.outputs.available_labels }}'
         with:
           copilot-token: ${{ secrets.PAT }}
           prompt: |
@@ -60,11 +33,6 @@ jobs:
             - You can choose multiple labels to apply.
 
             ## Input Data
-
-            **Available Labels** (comma-separated):
-            ```
-            ${{ env.AVAILABLE_LABELS }}
-            ```
 
             **Issue Title**:
             ```
@@ -82,6 +50,8 @@ jobs:
             ```
 
             ## Steps
+
+            0. Fetch possible labels from the repository.
 
             1. Review the issue title, issue body, and available labels provided above.
 

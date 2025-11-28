@@ -9,13 +9,9 @@ jobs:
     if: github.event.pull_request.user.login == 'dependabot[bot]'    
     steps:
       - uses: actions/checkout@v6
-
       - name: Fetch Dependabot metadata
         id: metadata
         uses: dependabot/fetch-metadata@v2
-        with:
-          copilot-token: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Generate dependency analysis with Copilot
         uses: austenstone/copilot-cli@main
         env:
@@ -47,10 +43,16 @@ jobs:
             
             ### 2. Provided Context
 
+            #### Dependabot Metadata
             ```json
             ${{ toJson(steps.metadata.outputs) }}
             ```
             
+            #### Event Data
+            ```event
+            ${{ toJson(github.event) }}
+            ```
+
             ### 3. Your Tasks
             
             Based on the context provided above:
