@@ -4,6 +4,9 @@ on:
     types: [completed]
 
 permissions: write-all # We need workflow: write
+concurrency:
+  cancel-in-progress: true
+  group: ${{ github.event_name }}-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
 
 jobs:
   ci-failure:
@@ -14,6 +17,7 @@ jobs:
       - uses: austenstone/copilot-cli@main
         with:
           copilot-token: ${{ secrets.PAT }}
+          repo-token: ${{ github.actor == 'dependabot[bot]' && secrets.PAT || github.token }}
           mcp-config: |
             {
               "mcpServers": {
