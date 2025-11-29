@@ -39,6 +39,9 @@ jobs:
             * Use **collapsible sections** (`<details>`) for raw log analysis.
             * End with a **"High Impact Fixes"** checklist.
 
+            Create the report in markdown format as a GitHub issue.
+            Do not ask for additional input.
+
             ## Input Data
             ```json
             ${{ toJson(github.event) }}
