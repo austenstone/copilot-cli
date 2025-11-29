@@ -71,7 +71,7 @@ inputs:
   options:
     description: 'Additional options to pass to the Copilot CLI (e.g., "--no-custom-instructions --model gpt-5")'
     required: false
-    default: '--screen-reader --no-color'
+    default: '--screen-reader --no-color --stream off'
 outputs:
   logs-path:
     description: 'Path to the copilot logs directory'
