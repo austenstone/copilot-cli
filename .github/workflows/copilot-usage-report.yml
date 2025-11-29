@@ -31,7 +31,7 @@ jobs:
             
             - Organization: ${{ github.event.inputs.organization || github.event.organization.login }}
 
-            - Repository (For issue creation): ${{ github.event.repository.name }}
+            - Repository (For issue creation): ${{ github.repository }}
 
             ---
 
@@ -41,17 +41,209 @@ jobs:
 
             ### Step 1: Data Collection
 
-            Gather data from these GitHub API endpoints:
+            Gather data from these GitHub REST API endpoints:
+
+            ---
+
+            #### 📊 Copilot Metrics API
+
+            **Get Copilot metrics for an organization**
+            ```
+            GET /orgs/{org}/copilot/metrics
+            ```
             
-            1. **Metrics Endpoint**: `GET /orgs/${{ github.event.organization.login }}/copilot/metrics`
-               - Collect usage statistics, acceptance rates, language breakdowns
-               - User engagement metrics
-               - Editor and IDE usage patterns
+            | Parameter | Type | Description |
+            |-----------|------|-------------|
+            | `org` | string | **Required.** The organization name (case insensitive) |
+            | `since` | string | Show metrics since this date (ISO 8601: `YYYY-MM-DDTHH:MM:SSZ`). Max 100 days ago |
+            | `until` | string | Show metrics until this date (ISO 8601). Should not precede `since` |
+            | `page` | integer | Page number for pagination. Default: `1` |
+            | `per_page` | integer | Results per page (max 100). Default: `100` |
             
-            2. **Billing Endpoint**: `GET /orgs/${{ github.event.organization.login }}/copilot/billing`
-               - Seat assignments and total seats
-               - Active users vs. total seats
-               - Billing breakdown and costs
+            **Required Scopes:** `manage_billing:copilot`, `read:org`, or `read:enterprise`
+            
+            **Returns:** Aggregated metrics including:
+            - `total_active_users`, `total_engaged_users`
+            - `copilot_ide_code_completions` (languages, editors, models, suggestions, acceptances, lines)
+            - `copilot_ide_chat` (chats, insertion events, copy events)
+            - `copilot_dotcom_chat` and `copilot_dotcom_pull_requests`
+
+            ---
+
+            **Get Copilot metrics for a team**
+            ```
+            GET /orgs/{org}/team/{team_slug}/copilot/metrics
+            ```
+            
+            | Parameter | Type | Description |
+            |-----------|------|-------------|
+            | `org` | string | **Required.** The organization name |
+            | `team_slug` | string | **Required.** The slug of the team name |
+            | `since` | string | Show metrics since this date (ISO 8601) |
+            | `until` | string | Show metrics until this date (ISO 8601) |
+            | `page` | integer | Page number. Default: `1` |
+            | `per_page` | integer | Results per page (max 100). Default: `100` |
+
+            > **Note:** Only returns results for days when the team had 5+ members with active Copilot licenses.
+
+            ---
+
+            **Get Copilot metrics for an enterprise**
+            ```
+            GET /enterprises/{enterprise}/copilot/metrics
+            ```
+            
+            | Parameter | Type | Description |
+            |-----------|------|-------------|
+            | `enterprise` | string | **Required.** The slug version of the enterprise name |
+            | `since` | string | Show metrics since this date (ISO 8601). Max 100 days ago |
+            | `until` | string | Show metrics until this date (ISO 8601) |
+            | `page` | integer | Page number. Default: `1` |
+            | `per_page` | integer | Days of metrics per page (max 100). Default: `100` |
+            
+            **Required Scopes:** `manage_billing:copilot` or `read:enterprise`
+
+            ---
+
+            #### 📈 Copilot Usage Metrics API (Enterprise)
+
+            **Get Copilot enterprise usage metrics (28-day rolling)**
+            ```
+            GET /enterprises/{enterprise}/copilot/metrics/reports/enterprise-28-day/latest
+            ```
+            
+            | Parameter | Type | Description |
+            |-----------|------|-------------|
+            | `enterprise` | string | **Required.** The slug version of the enterprise name |
+            
+            **Returns:** Download links to comprehensive 28-day usage report files with `report_start_day` and `report_end_day`.
+
+            ---
+
+            **Get Copilot enterprise usage metrics for a specific day**
+            ```
+            GET /enterprises/{enterprise}/copilot/metrics/reports/enterprise-1-day?day={day}
+            ```
+            
+            | Parameter | Type | Description |
+            |-----------|------|-------------|
+            | `enterprise` | string | **Required.** The slug version of the enterprise name |
+            | `day` | string | **Required.** The day to request data for (`YYYY-MM-DD` format) |
+            
+            **Returns:** Download links to daily usage report with `report_day`.
+
+            ---
+
+            **Get Copilot users usage metrics (28-day rolling)**
+            ```
+            GET /enterprises/{enterprise}/copilot/metrics/reports/users-28-day/latest
+            ```
+            
+            | Parameter | Type | Description |
+            |-----------|------|-------------|
+            | `enterprise` | string | **Required.** The slug version of the enterprise name |
+            
+            **Returns:** User-level usage data and engagement metrics for the previous 28 days.
+
+            ---
+
+            **Get Copilot users usage metrics for a specific day**
+            ```
+            GET /enterprises/{enterprise}/copilot/metrics/reports/users-1-day?day={day}
+            ```
+            
+            | Parameter | Type | Description |
+            |-----------|------|-------------|
+            | `enterprise` | string | **Required.** The slug version of the enterprise name |
+            | `day` | string | **Required.** The day to request data for (`YYYY-MM-DD` format) |
+
+            ---
+
+            #### 💺 Copilot User Management API (Seat Assignments)
+
+            **Get Copilot seat information and settings for an organization**
+            ```
+            GET /orgs/{org}/copilot/billing
+            ```
+            
+            | Parameter | Type | Description |
+            |-----------|------|-------------|
+            | `org` | string | **Required.** The organization name (case insensitive) |
+            
+            **Required Scopes:** `manage_billing:copilot` or `read:org`
+            
+            **Returns:**
+            - `seat_breakdown`: `total`, `added_this_cycle`, `pending_invitation`, `pending_cancellation`, `active_this_cycle`, `inactive_this_cycle`
+            - `seat_management_setting`, `ide_chat`, `platform_chat`, `cli`, `public_code_suggestions`, `plan_type`
+
+            ---
+
+            **List all Copilot seat assignments for an organization**
+            ```
+            GET /orgs/{org}/copilot/billing/seats
+            ```
+            
+            | Parameter | Type | Description |
+            |-----------|------|-------------|
+            | `org` | string | **Required.** The organization name (case insensitive) |
+            | `page` | integer | Page number. Default: `1` |
+            | `per_page` | integer | Results per page (max 100). Default: `50` |
+            
+            **Required Scopes:** `manage_billing:copilot` or `read:org`
+            
+            **Returns:** 
+            - `total_seats`: Total number of Copilot seats
+            - `seats`: Array of seat objects with:
+              - `created_at`, `updated_at`, `pending_cancellation_date`
+              - `last_activity_at`, `last_activity_editor`, `last_authenticated_at`
+              - `plan_type`, `assignee` (user details), `assigning_team`
+
+            ---
+
+            **Get Copilot seat assignment details for a user**
+            ```
+            GET /orgs/{org}/members/{username}/copilot
+            ```
+            
+            | Parameter | Type | Description |
+            |-----------|------|-------------|
+            | `org` | string | **Required.** The organization name |
+            | `username` | string | **Required.** The GitHub username |
+            
+            **Required Scopes:** `manage_billing:copilot` or `read:org`
+
+            ---
+
+            **List all Copilot seat assignments for an enterprise**
+            ```
+            GET /enterprises/{enterprise}/copilot/billing/seats
+            ```
+            
+            | Parameter | Type | Description |
+            |-----------|------|-------------|
+            | `enterprise` | string | **Required.** The slug version of the enterprise name |
+            | `page` | integer | Page number. Default: `1` |
+            | `per_page` | integer | Results per page (max 100). Default: `50` |
+            
+            **Required Scopes:** `manage_billing:copilot` or `read:enterprise`
+            
+            > **Note:** Users with access through multiple orgs/teams will only be counted once toward `total_seats`.
+
+            ---
+
+            **Get Copilot seat assignment details for an enterprise user**
+            ```
+            GET /enterprises/{enterprise}/members/{username}/copilot
+            ```
+            
+            | Parameter | Type | Description |
+            |-----------|------|-------------|
+            | `enterprise` | string | **Required.** The slug version of the enterprise name |
+            | `username` | string | **Required.** The GitHub username |
+            
+            **Required Scopes:** `manage_billing:copilot` or `read:org`
+
+            ---
 
             ### Step 2: Data Analysis
 
