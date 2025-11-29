@@ -12,8 +12,7 @@ jobs:
     timeout-minutes: 7
     permissions:
       contents: 'read'
-      id-token: 'write'
-      issues: 'read'
+      issues: 'write'
       pull-requests: 'read'
     steps:
       - uses: austenstone/copilot-cli@main
