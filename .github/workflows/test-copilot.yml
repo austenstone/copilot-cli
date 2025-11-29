@@ -10,7 +10,6 @@ jobs:
       - uses: austenstone/copilot-cli@main
         with:
           copilot-token: ${{ secrets.PAT }}
-          options: '--screen-reader'
           prompt: |
             Who are you?
 

@@ -69,8 +69,9 @@ inputs:
     required: false
     default: 'all'
   options:
-    description: 'Additional options to pass to the Copilot CLI (e.g., "--no-custom-instructions --screen-reader --no-color --model gpt-5")'
+    description: 'Additional options to pass to the Copilot CLI (e.g., "--no-custom-instructions --model gpt-5")'
     required: false
+    default: '--screen-reader --no-color'
 outputs:
   logs-path:
     description: 'Path to the copilot logs directory'
@@ -167,7 +168,7 @@ runs:
         if [ -n "$EXTRA_ARGS" ]; then
           COPILOT_ARGS+="$EXTRA_ARGS "
         fi
-        COPILOT_ARGS+="--log-dir $HOME/.copilot/logs"
+        COPILOT_ARGS+="--log-dir $HOME/.copilot/logs "
 
         echo "$COPILOT_ARGS"
         echo "::endgroup::"
