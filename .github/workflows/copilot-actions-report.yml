@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  ci-failure:
+  actions-report:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -39,8 +39,12 @@ jobs:
             * Use **collapsible sections** (`<details>`) for raw log analysis.
             * End with a **"High Impact Fixes"** checklist.
 
-            Create the report in markdown format as a GitHub issue.
-            Do not ask for additional input.
+            ## CRITICAL INSTRUCTIONS - READ CAREFULLY
+            - You MUST complete this task fully. Do NOT stop early or give up.
+            - You MUST actually create the GitHub issue.
+            - The issue should be created in the repository: ${{ github.repository }}
+            - If you encounter any issues, work around them and keep going until the issue is created.
+            - Do not ask for additional input. You have everything you need.
 
             ## Input Data
             ```json
