@@ -23,7 +23,7 @@ inputs:
     default: |
       {
         "banner": "never",
-        "render_markdown": false,
+        "render_markdown": true,
         "theme": "auto",
         "trusted_folders": []
       }
