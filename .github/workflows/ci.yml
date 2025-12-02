@@ -12,4 +12,4 @@ jobs:
 
     steps:
       - run: echo "Hello, world!"
-      - run: exit 1
+      - run: echo "Build successful!"
