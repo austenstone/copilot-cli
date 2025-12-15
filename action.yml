@@ -204,7 +204,7 @@ runs:
         LOG_LEVEL: ${{ inputs.log-level }}
         EXTRA_ARGS: ${{ inputs.options }}
     - name: Upload Copilot Artifacts
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       if: ${{ always() && inputs.upload-artifact == 'true' }}
       with:
         name: copilot-logs-${{ github.run_id }}-${{ github.run_attempt }}
