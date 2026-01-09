@@ -18,6 +18,25 @@ At minimum, you need: **`Copilot Requests = Read-only`**
 > [!TIP]
 > Save your token as a repository secret named `COPILOT_TOKEN`
 
+#### Organization Repositories
+
+> [!IMPORTANT]
+> **Fine-grained PAT Limitation:** Organization-owned tokens cannot have the "Copilot Requests" permission — this is a GitHub platform limitation.
+>
+> **Workaround for Organization Repos:**
+> 1. Use a **user-owned PAT** with "Copilot Requests" permission for `copilot-token`
+> 2. Use the default `GITHUB_TOKEN` or an org token for `repo-token` (for repository operations)
+>
+> ```yaml
+> - uses: austenstone/copilot-cli@v2
+>   with:
+>     copilot-token: ${{ secrets.COPILOT_TOKEN }}  # User PAT with Copilot access
+>     repo-token: ${{ secrets.GITHUB_TOKEN }}      # Default token for repo operations
+>     prompt: "Your prompt here"
+> ```
+>
+> This two-token pattern allows Copilot access while maintaining proper repository permissions.
+
 ### Basic Setup
 
 Add the following workflow to your `.github/workflows` folder:
@@ -125,26 +144,42 @@ The action supports Model Context Protocol (MCP) servers for extending Copilot's
    - You must use a PAT with the "Copilot Requests" permission
    - Make sure your token is saved as a secret and referenced correctly
 
-2. **Copilot starts but permission denied**
+2. **Organization Repository Access Issues**
+   - **Problem:** Fine-grained PATs cannot have both "Copilot Requests" permission AND organization repository access
+   - **Root Cause:** This is a GitHub platform limitation:
+     - Personal account tokens: ✅ Copilot Requests permission, ❌ Limited org repo access
+     - Organization tokens: ❌ No Copilot Requests permission, ✅ Full org repo access
+   - **Solution:** Use the two-token pattern:
+     ```yaml
+     - uses: austenstone/copilot-cli@v2
+       with:
+         copilot-token: ${{ secrets.COPILOT_TOKEN }}  # User PAT with Copilot Requests
+         repo-token: ${{ secrets.GITHUB_TOKEN }}      # Default token for repo operations
+     ```
+   - The `copilot-token` authenticates with Copilot API
+   - The `repo-token` handles repository operations (commits, PRs, etc.)
+   - Ensure your user PAT has appropriate repository access for the repositories you want Copilot to analyze
+
+3. **Copilot starts but permission denied**
    - The repo-token default to `GITHUB_TOKEN`.
    - Add `permissions: write-all` to your workflow file.
    - Check Settings > Actions > General > Workflow permissions.
    - Verify the token is correctly configured in your workflow.
 
-3. **Tool Access Denied**
+4. **Tool Access Denied**
    - Check your `allowed-tools` and `denied-tools` configuration
    - If `allow-all-tools: false`, you must explicitly allow needed tools
 
-4. **MCP Server Connection Issues**
+5. **MCP Server Connection Issues**
    - Verify MCP server URLs are accessible from GitHub-hosted runners
    - Check authentication headers and tokens
    - Ensure `type` is set correctly (`local`, `http`, or `sse`)
 
-5. **Session Resume Not Working**
+6. **Session Resume Not Working**
    - Session data is stored in logs; ensure `upload-artifact: true`
    - Use `resume-session: latest` to continue the most recent session
 
-6. **Large Output Truncation**
+7. **Large Output Truncation**
    - Set `log-level: error` or `log-level: warning` to reduce verbosity
    - Break complex prompts into smaller, focused tasks
 

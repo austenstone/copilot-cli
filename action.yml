@@ -5,10 +5,10 @@ branding:
   color: 'purple'
 inputs:
   copilot-token:
-    description: 'GitHub Personal Access Token (PAT) with "Copilot Requests" permission. The default github.token does NOT have Copilot access - you must provide a PAT with the "Copilot Requests" scope. See: https://github.com/settings/tokens/new?scopes=copilot'
+    description: 'GitHub Personal Access Token (PAT) with "Copilot Requests" permission. The default github.token does NOT have Copilot access - you must provide a user-owned PAT with the "Copilot Requests" scope. Note: Organization-owned fine-grained PATs cannot have this permission due to GitHub platform limitations. See: https://github.com/settings/tokens/new?scopes=copilot'
     required: true
   repo-token:
-    description: 'Token for standard GitHub repository operations (e.g., pushing commits, creating PRs). Defaults to copilot-token if not specified. You can use the default GITHUB_TOKEN here if you only need repo access.'
+    description: 'Token for standard GitHub repository operations (e.g., pushing commits, creating PRs). Defaults to copilot-token if not specified. For organization repositories, you can use the default GITHUB_TOKEN here while using a user PAT for copilot-token.'
     required: false
     default: ${{ github.token }}
   prompt:
