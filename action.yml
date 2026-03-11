@@ -318,7 +318,7 @@ runs:
       uses: actions/upload-artifact@v4
       if: ${{ always() && inputs.upload-artifact == 'true' }}
       with:
-        name: copilot-logs-${{ github.run_id }}-${{ github.run_attempt }}
+        name: copilot-logs-${{ github.job }}-${{ github.run_id }}-${{ github.run_attempt }}
         path: |
           ~/.copilot/logs
         if-no-files-found: warn
