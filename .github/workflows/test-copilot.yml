@@ -2,14 +2,16 @@ on:
   push:
   workflow_dispatch:
 
+permissions:
+  copilot-requests: write
+
 jobs:
   copilot:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: austenstone/copilot-cli@main
+      - uses: austenstone/copilot-cli@notoken
         with:
-          copilot-token: ${{ secrets.PAT }}
           prompt: |
             Who are you?
 
