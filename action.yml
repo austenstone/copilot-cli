@@ -24,6 +24,21 @@ inputs:
         "theme": "auto",
         "trusted_folders": []
       }
+  autopilot:
+    description: 'Enable autopilot continuation in prompt mode'
+    required: false
+    default: true
+  max-turns:
+    description: 'Maximum number of autopilot continuation turns (default: unlimited)'
+    required: false
+  no-ask-user:
+    description: 'Disable the ask_user tool so the agent works autonomously without asking questions'
+    required: false
+    default: true
+  silent:
+    description: 'Output only the agent response without usage statistics'
+    required: false
+    default: false
   allow-all-tools:
     description: 'Allow all tools without approval'
     required: false
@@ -33,6 +48,12 @@ inputs:
     required: false
   denied-tools:
     description: 'Comma-separated list of tools to deny (e.g., "shell(rm),shell(git push)")'
+    required: false
+  allowed-urls:
+    description: 'Comma-separated list of URLs or domains to allow (e.g., "github.com,*.api.com")'
+    required: false
+  denied-urls:
+    description: 'Comma-separated list of URLs or domains to deny (e.g., "evil.com")'
     required: false
   copilot-version:
     description: 'Version of Copilot CLI to install (e.g., "latest", "prerelease", "0.0.329")'
@@ -47,10 +68,20 @@ inputs:
   disable-mcp-servers:
     description: 'Comma-separated list of MCP servers to disable (e.g., "github-mcp-server,custom-server")'
     required: false
+  disable-builtin-mcps:
+    description: 'Disable all built-in MCP servers (github-mcp-server, playwright, fetch, time)'
+    required: false
+    default: false
   enable-all-github-mcp-tools:
     description: 'Enable all GitHub MCP tools'
     required: false
     default: false
+  add-github-mcp-tools:
+    description: 'Comma-separated list of specific GitHub MCP tools to enable (e.g., "create_issue,search_code")'
+    required: false
+  add-github-mcp-toolsets:
+    description: 'Comma-separated list of GitHub MCP toolsets to enable (e.g., "issues,pull_requests")'
+    required: false
   resume-session:
     description: 'Resume from a previous session ID (use "latest" for most recent)'
     required: false
@@ -62,11 +93,22 @@ inputs:
     description: 'Specify a custom agent to use'
     required: false
   reasoning-effort:
-    description: 'Set the reasoning effort level (e.g., "low", "medium", "high")'
+    description: 'Set the reasoning effort level (e.g., "low", "medium", "high", "xhigh")'
     required: false
   output-format:
     description: 'Output format (e.g., "json" for JSONL output in prompt mode)'
     required: false
+  experimental:
+    description: 'Enable experimental features'
+    required: false
+    default: false
+  share:
+    description: 'Share session to a markdown file after completion (provide a file path, or "true" for default)'
+    required: false
+  share-gist:
+    description: 'Share session to a secret GitHub gist after completion'
+    required: false
+    default: false
   log-level:
     description: 'Set the log level (choices: "none", "error", "warning", "info", "debug", "all", "default")'
     required: false
@@ -129,8 +171,23 @@ runs:
             COPILOT_ARGS+="--disable-mcp-server $server "
           done
         fi
+        if [ "$DISABLE_BUILTIN_MCPS" = "true" ]; then
+          COPILOT_ARGS+="--disable-builtin-mcps "
+        fi
         if [ "$ENABLE_ALL_GITHUB_MCP_TOOLS" = "true" ]; then
           COPILOT_ARGS+="--enable-all-github-mcp-tools "
+        fi
+        if [ -n "$ADD_GITHUB_MCP_TOOLS" ]; then
+          IFS=',' read -ra TOOLS <<< "$ADD_GITHUB_MCP_TOOLS"
+          for tool in "${TOOLS[@]}"; do
+            COPILOT_ARGS+="--add-github-mcp-tool $tool "
+          done
+        fi
+        if [ -n "$ADD_GITHUB_MCP_TOOLSETS" ]; then
+          IFS=',' read -ra TOOLSETS <<< "$ADD_GITHUB_MCP_TOOLSETS"
+          for toolset in "${TOOLSETS[@]}"; do
+            COPILOT_ARGS+="--add-github-mcp-toolset $toolset "
+          done
         fi
         if [ "$ALLOW_ALL_TOOLS" = "true" ]; then
           COPILOT_ARGS+="--allow-all-tools "
@@ -145,6 +202,18 @@ runs:
           IFS=',' read -ra TOOLS <<< "$DENIED_TOOLS"
           for tool in "${TOOLS[@]}"; do
             COPILOT_ARGS+="--deny-tool $tool "
+          done
+        fi
+        if [ -n "$ALLOWED_URLS" ]; then
+          IFS=',' read -ra URLS <<< "$ALLOWED_URLS"
+          for url in "${URLS[@]}"; do
+            COPILOT_ARGS+="--allow-url $url "
+          done
+        fi
+        if [ -n "$DENIED_URLS" ]; then
+          IFS=',' read -ra URLS <<< "$DENIED_URLS"
+          for url in "${URLS[@]}"; do
+            COPILOT_ARGS+="--deny-url $url "
           done
         fi
         if [ -n "$MODEL" ]; then
@@ -168,6 +237,31 @@ runs:
         fi
         if [ -n "$OUTPUT_FORMAT" ]; then
           COPILOT_ARGS+="--output-format $OUTPUT_FORMAT "
+        fi
+        if [ "$AUTOPILOT" = "true" ]; then
+          COPILOT_ARGS+="--autopilot "
+        fi
+        if [ -n "$MAX_TURNS" ]; then
+          COPILOT_ARGS+="--max-autopilot-continues $MAX_TURNS "
+        fi
+        if [ "$NO_ASK_USER" = "true" ]; then
+          COPILOT_ARGS+="--no-ask-user "
+        fi
+        if [ "$SILENT" = "true" ]; then
+          COPILOT_ARGS+="-s "
+        fi
+        if [ "$EXPERIMENTAL" = "true" ]; then
+          COPILOT_ARGS+="--experimental "
+        fi
+        if [ -n "$SHARE" ]; then
+          if [ "$SHARE" = "true" ]; then
+            COPILOT_ARGS+="--share "
+          else
+            COPILOT_ARGS+="--share=$SHARE "
+          fi
+        fi
+        if [ "$SHARE_GIST" = "true" ]; then
+          COPILOT_ARGS+="--share-gist "
         fi
         if [ -n "$EXTRA_ARGS" ]; then
           COPILOT_ARGS+="$EXTRA_ARGS "
@@ -207,6 +301,18 @@ runs:
         LOG_LEVEL: ${{ inputs.log-level }}
         REASONING_EFFORT: ${{ inputs.reasoning-effort }}
         OUTPUT_FORMAT: ${{ inputs.output-format }}
+        AUTOPILOT: ${{ inputs.autopilot }}
+        MAX_TURNS: ${{ inputs.max-turns }}
+        NO_ASK_USER: ${{ inputs.no-ask-user }}
+        SILENT: ${{ inputs.silent }}
+        EXPERIMENTAL: ${{ inputs.experimental }}
+        SHARE: ${{ inputs.share }}
+        SHARE_GIST: ${{ inputs.share-gist }}
+        ALLOWED_URLS: ${{ inputs.allowed-urls }}
+        DENIED_URLS: ${{ inputs.denied-urls }}
+        DISABLE_BUILTIN_MCPS: ${{ inputs.disable-builtin-mcps }}
+        ADD_GITHUB_MCP_TOOLS: ${{ inputs.add-github-mcp-tools }}
+        ADD_GITHUB_MCP_TOOLSETS: ${{ inputs.add-github-mcp-toolsets }}
         EXTRA_ARGS: ${{ inputs.options }}
     - name: Upload Copilot Artifacts
       uses: actions/upload-artifact@v4
