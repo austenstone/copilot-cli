@@ -5,10 +5,7 @@ branding:
   color: 'purple'
 inputs:
   copilot-token:
-    description: 'GitHub Personal Access Token (PAT) with "Copilot Requests" permission. The default github.token does NOT have Copilot access - you must provide a PAT with the "Copilot Requests" scope. See: https://github.com/settings/tokens/new?scopes=copilot'
-    required: true
-  repo-token:
-    description: 'Token for standard GitHub repository operations (e.g., pushing commits, creating PRs). Defaults to copilot-token if not specified. You can use the default GITHUB_TOKEN here if you only need repo access.'
+    description: '(Deprecated) The default github.token now supports copilot-requests permission — no PAT needed. Only provide this if you need to override with a specific token.'
     required: false
     default: ${{ github.token }}
   prompt:
@@ -38,9 +35,9 @@ inputs:
     description: 'Comma-separated list of tools to deny (e.g., "shell(rm),shell(git push)")'
     required: false
   copilot-version:
-    description: 'Version of @github/copilot to install (e.g., "latest", "0.0.329")'
+    description: 'Version of Copilot CLI to install (e.g., "latest", "prerelease", "0.0.329")'
     required: false
-    default: 'latest'
+    default: 'prerelease'
   model:
     description: 'Model to use (e.g., "claude-sonnet-4.5", "claude-sonnet-4", "gpt-5")'
     required: false
@@ -82,21 +79,16 @@ outputs:
 runs:
   using: 'composite'
   steps:
-    - uses: actions/setup-node@v6
+    - uses: actions/setup-copilot@v0
       with:
-        node-version: '22'
+        version: ${{ inputs.copilot-version }}
     - name: Run GitHub Copilot CLI
       id: copilot
       shell: bash
       run: |
         # Script
 
-        echo "::group::Install GitHub Copilot CLI"
-        if [ "$COPILOT_VERSION" = "latest" ]; then
-          npm install -g @github/copilot
-        else
-          npm install -g @github/copilot@$COPILOT_VERSION
-        fi
+        echo "::group::Copilot CLI Version"
         echo "CLI Version: $(copilot --version)"
         echo "::endgroup::"
         
@@ -186,10 +178,9 @@ runs:
         echo "logs_path=$HOME/.copilot/logs" >> $GITHUB_OUTPUT
         echo "exit_code=$EXIT_CODE" >> $GITHUB_OUTPUT
       env:
-        GH_TOKEN: ${{ inputs.repo-token || inputs.copilot-token }}
-        COPILOT_GITHUB_TOKEN: ${{ inputs.copilot-token }}
+        GITHUB_TOKEN: ${{ inputs.copilot-token }}
+        GH_TOKEN: ${{ inputs.copilot-token }}
         PROMPT: ${{ inputs.prompt }}
-        COPILOT_VERSION: ${{ inputs.copilot-version }}
         CONFIG: ${{ inputs.copilot-config }}
         MCP_CONFIG: ${{ inputs.mcp-config }}
         ALLOW_ALL_TOOLS: ${{ inputs.allow-all-tools }}
