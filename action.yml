@@ -109,6 +109,10 @@ inputs:
     description: 'Share session to a secret GitHub gist after completion'
     required: false
     default: false
+  fail-on-error:
+    description: 'Fail the step if the Copilot CLI exits with a non-zero exit code'
+    required: false
+    default: false
   log-level:
     description: 'Set the log level (choices: "none", "error", "warning", "info", "debug", "all", "default")'
     required: false
@@ -124,6 +128,9 @@ outputs:
   exit-code:
     description: 'Exit code from the Copilot CLI command'
     value: ${{ steps.copilot.outputs.exit_code }}
+  session-path:
+    description: 'Path to the shared session markdown file (if share was used)'
+    value: ${{ steps.copilot.outputs.session_path }}
 runs:
   using: 'composite'
   steps:
@@ -139,6 +146,14 @@ runs:
         echo "::group::Copilot CLI Version"
         echo "CLI Version: $(copilot --version)"
         echo "::endgroup::"
+
+        if [ -n "$CONFIG" ]; then
+          echo "::group::Configure Copilot"
+          mkdir -p $HOME/.copilot
+          echo "$CONFIG" > $HOME/.copilot/config.json
+          cat $HOME/.copilot/config.json
+          echo "::endgroup::"
+        fi
         
         if [ -n "$MCP_CONFIG" ]; then
           echo "::group::Configure Copilot MCP"
@@ -283,6 +298,17 @@ runs:
 
         echo "logs_path=$HOME/.copilot/logs" >> $GITHUB_OUTPUT
         echo "exit_code=$EXIT_CODE" >> $GITHUB_OUTPUT
+
+        # Capture session share path if it exists
+        SESSION_FILE=$(ls copilot-session-*.md 2>/dev/null | head -1)
+        if [ -n "$SESSION_FILE" ]; then
+          echo "session_path=$SESSION_FILE" >> $GITHUB_OUTPUT
+        fi
+
+        if [ "$FAIL_ON_ERROR" = "true" ] && [ "$EXIT_CODE" -ne 0 ]; then
+          echo "::error::Copilot CLI exited with code $EXIT_CODE"
+          exit $EXIT_CODE
+        fi
       env:
         GITHUB_TOKEN: ${{ inputs.copilot-token }}
         GH_TOKEN: ${{ inputs.copilot-token }}
@@ -313,6 +339,7 @@ runs:
         DISABLE_BUILTIN_MCPS: ${{ inputs.disable-builtin-mcps }}
         ADD_GITHUB_MCP_TOOLS: ${{ inputs.add-github-mcp-tools }}
         ADD_GITHUB_MCP_TOOLSETS: ${{ inputs.add-github-mcp-toolsets }}
+        FAIL_ON_ERROR: ${{ inputs.fail-on-error }}
         EXTRA_ARGS: ${{ inputs.options }}
     - name: Upload Copilot Artifacts
       uses: actions/upload-artifact@v4
@@ -321,4 +348,5 @@ runs:
         name: copilot-logs-${{ github.job }}-${{ github.run_id }}-${{ github.run_attempt }}
         path: |
           ~/.copilot/logs
+          copilot-session-*.md
         if-no-files-found: warn
