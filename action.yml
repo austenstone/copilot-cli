@@ -157,16 +157,16 @@ runs:
         
         if [ -n "$MCP_CONFIG" ]; then
           echo "::group::Configure Copilot MCP"
-          cat $XDG_CONFIG_HOME/.copilot/mcp-config.json || echo "No existing MCP config found"
-          mkdir -p $XDG_CONFIG_HOME/.copilot
+          cat $HOME/.copilot/mcp-config.json 2>/dev/null || echo "No existing MCP config found"
+          mkdir -p $HOME/.copilot
           
           BASE_MCP_CONFIG='{
             "mcpServers": { }
           }'
 
           MERGED_MCP_CONFIG=$(echo "$BASE_MCP_CONFIG" | jq --argjson user "$MCP_CONFIG" '.mcpServers += $user.mcpServers')
-          echo "$MERGED_MCP_CONFIG" > $XDG_CONFIG_HOME/.copilot/mcp-config.json
-          cat $XDG_CONFIG_HOME/.copilot/mcp-config.json
+          echo "$MERGED_MCP_CONFIG" > $HOME/.copilot/mcp-config.json
+          cat $HOME/.copilot/mcp-config.json
           echo "::endgroup::"
         fi
         

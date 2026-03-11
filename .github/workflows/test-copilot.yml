@@ -12,11 +12,16 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - uses: austenstone/copilot-cli@notoken
+        id: copilot
         with:
           prompt: "Say 'hello world' and nothing else."
           max-turns: 1
+      - name: Verify exit code output
+        run: |
+          echo "Exit code: ${{ steps.copilot.outputs.exit-code }}"
+          test "${{ steps.copilot.outputs.exit-code }}" = "0"
 
-  # Test autopilot + max-turns limit
+  # Test autopilot + max-turns limit with tool use
   autopilot:
     runs-on: ubuntu-latest
     steps:
@@ -25,8 +30,12 @@ jobs:
         with:
           prompt: "Create a file called test.txt with the content 'autopilot works'. Then read it back to confirm."
           max-turns: 3
+      - name: Verify file was created
+        run: |
+          test -f test.txt
+          grep -q "autopilot works" test.txt
 
-  # Test silent mode
+  # Test silent mode — no usage stats in output
   silent:
     runs-on: ubuntu-latest
     steps:
@@ -60,7 +69,7 @@ jobs:
           output-format: json
           max-turns: 1
 
-  # Test tool deny list
+  # Test tool deny list — shell should be blocked
   denied-tools:
     runs-on: ubuntu-latest
     steps:
@@ -105,18 +114,22 @@ jobs:
           denied-urls: "evil.com"
           max-turns: 2
 
-  # Test share session to file
+  # Test share session to file + verify output
   share:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
       - uses: austenstone/copilot-cli@notoken
+        id: copilot
         with:
           prompt: "Say 'session sharing works'."
           share: true
           max-turns: 1
-      - name: Check share file exists
-        run: ls -la copilot-session-*.md || echo "No session file found"
+      - name: Verify session file exists
+        run: |
+          echo "Session path: ${{ steps.copilot.outputs.session-path }}"
+          test -f "${{ steps.copilot.outputs.session-path }}"
+          cat "${{ steps.copilot.outputs.session-path }}"
 
   # Test experimental flag
   experimental:
@@ -153,3 +166,37 @@ jobs:
           prompt: "What files are in this repo?"
           agent: explore
           max-turns: 2
+
+  # Test fail-on-error catches non-zero exit
+  fail-on-error:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: austenstone/copilot-cli@notoken
+        id: copilot
+        continue-on-error: true
+        with:
+          prompt: "Exit with error code 1 by running: exit 1"
+          fail-on-error: true
+          max-turns: 2
+      - name: Verify exit code was captured
+        run: |
+          echo "Exit code: ${{ steps.copilot.outputs.exit-code }}"
+          echo "Step outcome: ${{ steps.copilot.outcome }}"
+
+  # Test copilot-config is applied
+  config:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: austenstone/copilot-cli@notoken
+        with:
+          prompt: "Say 'config test passed'."
+          copilot-config: |
+            {
+              "banner": "never",
+              "render_markdown": false,
+              "theme": "dark",
+              "trusted_folders": []
+            }
+          max-turns: 1
