@@ -17,7 +17,6 @@ jobs:
         env:
           CONTEXT7_API_KEY: ${{ secrets.CONTEXT7_API_KEY }}
         with:
-          copilot-token: ${{ secrets.PAT }}
           mcp-config: |
             {
               "mcpServers": {

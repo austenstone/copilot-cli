@@ -16,7 +16,6 @@ jobs:
       - uses: actions/checkout@v6
       - uses: austenstone/copilot-cli@main
         with:
-          copilot-token: ${{ secrets.PAT }}
           repo-token: ${{ github.actor == 'dependabot[bot]' && secrets.PAT || github.token }}
           mcp-config: |
             {

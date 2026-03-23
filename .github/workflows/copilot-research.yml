@@ -11,7 +11,6 @@ jobs:
         env:
           FIRECRAWL_API_KEY: ${{ secrets.FIRECRAWL_API_KEY }}
         with:
-          copilot-token: ${{ secrets.PAT }}
           mcp-config: |
             {
               "mcpServers": {
