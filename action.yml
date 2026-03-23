@@ -8,6 +8,10 @@ inputs:
     description: '(Deprecated) The default github.token now supports copilot-requests permission — no PAT needed. Only provide this if you need to override with a specific token.'
     required: false
     default: ${{ github.token }}
+  repo-token:
+    description: 'Token for repository operations (gh CLI). Defaults to github.token. Use a PAT if the agent needs elevated repo permissions.'
+    required: false
+    default: ${{ github.token }}
   prompt:
     description: 'Prompt to send to GitHub Copilot'
     required: true
@@ -311,7 +315,7 @@ runs:
         fi
       env:
         GITHUB_TOKEN: ${{ inputs.copilot-token }}
-        GH_TOKEN: ${{ inputs.copilot-token }}
+        GH_TOKEN: ${{ inputs.repo-token }}
         PROMPT: ${{ inputs.prompt }}
         CONFIG: ${{ inputs.copilot-config }}
         MCP_CONFIG: ${{ inputs.mcp-config }}
