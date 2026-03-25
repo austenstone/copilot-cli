@@ -346,7 +346,7 @@ runs:
         FAIL_ON_ERROR: ${{ inputs.fail-on-error }}
         EXTRA_ARGS: ${{ inputs.options }}
     - name: Upload Copilot Artifacts
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       if: ${{ always() && inputs.upload-artifact == 'true' }}
       with:
         name: copilot-logs-${{ github.job }}-${{ github.run_id }}-${{ github.run_attempt }}
