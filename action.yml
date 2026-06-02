@@ -138,16 +138,23 @@ outputs:
 runs:
   using: 'composite'
   steps:
-    - uses: actions/setup-copilot@v0
+    - uses: actions/setup-node@v6
       with:
-        version: ${{ inputs.copilot-version }}
+        node-version: '22'
     - name: Run GitHub Copilot CLI
       id: copilot
       shell: bash
       run: |
         # Script
 
-        echo "::group::Copilot CLI Version"
+        echo "::group::Install GitHub Copilot CLI"
+        if [ "$COPILOT_VERSION" = "latest" ]; then
+          npm install -g @github/copilot
+        elif [ "$COPILOT_VERSION" = "prerelease" ]; then
+          npm install -g @github/copilot@prerelease
+        else
+          npm install -g @github/copilot@$COPILOT_VERSION
+        fi
         echo "CLI Version: $(copilot --version)"
         echo "::endgroup::"
 
@@ -317,6 +324,7 @@ runs:
         GITHUB_TOKEN: ${{ inputs.copilot-token }}
         GH_TOKEN: ${{ inputs.repo-token }}
         PROMPT: ${{ inputs.prompt }}
+        COPILOT_VERSION: ${{ inputs.copilot-version }}
         CONFIG: ${{ inputs.copilot-config }}
         MCP_CONFIG: ${{ inputs.mcp-config }}
         ALLOW_ALL_TOOLS: ${{ inputs.allow-all-tools }}
