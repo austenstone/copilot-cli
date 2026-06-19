@@ -1,5 +1,7 @@
 # GitHub Copilot CLI Action 🤖
 
+[![Fake CI](https://github.com/austenstone/copilot-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/austenstone/copilot-cli/actions/workflows/ci.yml)
+
 A GitHub Action wrapper for the [GitHub Copilot CLI](https://docs.github.com/en/copilot/concepts/agents/about-copilot-cli) that enables AI-powered automation in your workflow files.
 
 ## Installation
