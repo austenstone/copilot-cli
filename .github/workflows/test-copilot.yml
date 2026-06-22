@@ -219,3 +219,116 @@ jobs:
               "trusted_folders": []
             }
           max-turns: 1
+
+  # Test long context window selection
+  context:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: ./
+        with:
+          prompt: "Say hello and exit."
+          context: long_context
+          max-turns: 1
+
+  # Test blanket URL allow
+  allow-all-urls:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: ./
+        with:
+          prompt: "Say hello and exit."
+          allow-all-urls: true
+          max-turns: 1
+
+  # Test blanket path allow
+  allow-all-paths:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: ./
+        with:
+          prompt: "Say hello and exit."
+          allow-all-paths: true
+          max-turns: 1
+
+  # Test forwarding environment variables to the CLI
+  secret-env-vars:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: ./
+        env:
+          DUMMY_SECRET: hunter2
+        with:
+          prompt: "Print nothing sensitive and exit."
+          secret-env-vars: DUMMY_SECRET
+          max-turns: 1
+
+  # Test tool exclusion list
+  excluded-tools:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: ./
+        with:
+          prompt: "Say hello."
+          excluded-tools: "shell"
+          max-turns: 1
+
+  # Test tool allow list
+  available-tools:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: ./
+        with:
+          prompt: "Say hello."
+          available-tools: "view"
+          max-turns: 1
+
+  # Test persistent memory
+  enable-memory:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: ./
+        with:
+          prompt: "Say hello and exit."
+          enable-memory: true
+          max-turns: 1
+
+  # Test plan mode — the action skips --autopilot when mode is set
+  mode-plan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: ./
+        with:
+          prompt: "Say hello and exit."
+          mode: plan
+          max-turns: 1
+
+  # Test file attachments
+  attachments:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - run: echo hi > note.txt
+      - uses: ./
+        with:
+          prompt: "Summarize the attached file."
+          attachments: note.txt
+          max-turns: 1
+
+  # Test disabling the temp directory
+  disallow-temp-dir:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: ./
+        with:
+          prompt: "Say hello and exit."
+          disallow-temp-dir: true
+          max-turns: 1
