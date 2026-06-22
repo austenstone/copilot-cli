@@ -58,6 +58,21 @@ jobs:
             }
 ```
 
+### Redacting Secrets in a Large Repo
+
+Use `secret-env-vars` to strip and redact sensitive values from shell/MCP environments and logs, and `context: long_context` to give the agent a larger context window for big codebases:
+
+```yaml
+      - name: 'Run Copilot CLI'
+        uses: austenstone/copilot-cli@v3
+        env:
+          API_KEY: ${{ secrets.API_KEY }}
+        with:
+          prompt: 'Audit the codebase for hard-coded credentials and summarize findings.'
+          secret-env-vars: 'API_KEY'
+          context: 'long_context'
+```
+
 ## Configuration
 
 ### Input Parameters
@@ -71,29 +86,43 @@ jobs:
 | `mcp-config` | MCP server configuration in JSON format | ❌ | - |
 | **Agent Behavior** | | | |
 | `autopilot` | Enable autopilot continuation in prompt mode | ❌ | `true` |
-| `max-turns` | Maximum number of autopilot continuation turns | ❌ | unlimited |
+| `max-turns` | Maximum number of autopilot continuation turns | ❌ | `5` |
+| `mode` | Initial agent mode (`interactive`, `plan`, or `autopilot`). When set, it overrides the autopilot toggle. | ❌ | - |
 | `no-ask-user` | Disable ask_user tool for fully autonomous CI execution | ❌ | `true` |
 | `silent` | Output only the agent response without usage statistics | ❌ | `false` |
-| `model` | AI model to use (e.g., `"claude-sonnet-4"`, `"gpt-5"`) | ❌ | - |
+| `model` | AI model to use (e.g., `"claude-sonnet-4.6"`, `"claude-opus-4.8"`, `"gpt-5.5"`) | ❌ | - |
 | `agent` | Specify a custom agent to use (e.g., `"explore"`) | ❌ | - |
-| `reasoning-effort` | Reasoning effort level (`low`, `medium`, `high`, `xhigh`) | ❌ | - |
+| `reasoning-effort` | Reasoning effort level (`none`, `low`, `medium`, `high`, `xhigh`, `max`) | ❌ | - |
+| `context` | Context window tier (`default` or `long_context`). Useful for large repos. | ❌ | - |
+| `attachments` | Comma-separated file paths (images or native documents) to attach to the prompt | ❌ | - |
 | `experimental` | Enable experimental CLI features | ❌ | `false` |
 | **Tool Permissions** | | | |
 | `allow-all-tools` | Allow all tools without approval | ❌ | `true` |
 | `allowed-tools` | Comma-separated list of tools to allow (e.g., `"shell(git:*)"`) | ❌ | - |
 | `denied-tools` | Comma-separated list of tools to deny (e.g., `"shell(rm)"`) | ❌ | - |
+| `available-tools` | Comma-separated allowlist — only these tools are available to the model | ❌ | - |
+| `excluded-tools` | Comma-separated tools to hide from the model | ❌ | - |
 | `allowed-urls` | Comma-separated list of URLs/domains to allow | ❌ | - |
 | `denied-urls` | Comma-separated list of URLs/domains to deny | ❌ | - |
+| `allow-all-urls` | Allow access to all URLs without confirmation | ❌ | `false` |
+| `allow-all-paths` | Disable file-path verification and allow access to any path | ❌ | `false` |
+| `secret-env-vars` | Comma-separated env var names whose values are stripped from shell/MCP environments and redacted from output/logs (e.g., `"API_KEY,DB_PASSWORD"`) | ❌ | - |
 | **MCP Configuration** | | | |
 | `enable-all-github-mcp-tools` | Enable all GitHub MCP tools | ❌ | `false` |
 | `add-github-mcp-tools` | Comma-separated list of specific GitHub MCP tools to enable | ❌ | - |
 | `add-github-mcp-toolsets` | Comma-separated list of GitHub MCP toolsets to enable | ❌ | - |
 | `disable-mcp-servers` | Comma-separated list of MCP servers to disable | ❌ | - |
-| `disable-builtin-mcps` | Disable all built-in MCP servers | ❌ | `false` |
+| `disable-builtin-mcps` | Disable all built-in MCP servers (currently only `github-mcp-server`) | ❌ | `false` |
+| `additional-mcp-config` | Comma-separated extra MCP server configs (JSON string or `@file` path) that augment the merged MCP config | ❌ | - |
 | **Files & Directories** | | | |
 | `additional-directories` | Comma-separated list of additional directories to trust | ❌ | - |
+| `disallow-temp-dir` | Prevent automatic access to the system temp directory | ❌ | `false` |
+| `plugin-dir` | Comma-separated local plugin directories to load | ❌ | - |
 | **Session Management** | | | |
 | `resume-session` | Resume from a previous session ID (use `"latest"` for most recent) | ❌ | - |
+| `session-id` | Resume an existing session/task by ID, or set the UUID for a new session | ❌ | - |
+| `name` | Set a human-friendly name for the session | ❌ | - |
+| `enable-memory` | Enable cross-session memory in prompt mode | ❌ | `false` |
 | `share` | Share session to a markdown file after completion | ❌ | - |
 | `share-gist` | Share session to a secret GitHub gist | ❌ | `false` |
 | **Output & Logging** | | | |
@@ -101,7 +130,7 @@ jobs:
 | `log-level` | Log level: `none`, `error`, `warning`, `info`, `debug`, `all` | ❌ | `all` |
 | `upload-artifact` | Upload Copilot logs as workflow artifacts | ❌ | `true` |
 | `fail-on-error` | Fail the step if Copilot CLI exits with non-zero code | ❌ | `false` |
-| `copilot-version` | Version of Copilot CLI to install | ❌ | `prerelease` |
+| `copilot-version` | Version of Copilot CLI to install (e.g., `"1.0.63"`) | ❌ | `prerelease` |
 | `options` | Additional CLI flags (e.g., `"--no-custom-instructions"`) | ❌ | `--screen-reader --no-color --stream off` |
 
 ### Output Parameters
