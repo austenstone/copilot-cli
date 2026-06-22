@@ -105,7 +105,7 @@ Use `secret-env-vars` to strip and redact sensitive values from shell/MCP enviro
 | `allowed-urls` | Comma-separated list of URLs/domains to allow | ❌ | - |
 | `denied-urls` | Comma-separated list of URLs/domains to deny | ❌ | - |
 | `allow-all-urls` | Allow access to all URLs without confirmation | ❌ | `false` |
-| `allow-all-paths` | Disable file-path verification and allow access to any path | ❌ | `false` |
+| `allow-all-paths` | Allow access to any file path without approval. When `false` (default), the agent is scoped to the workspace instead of the entire filesystem | ❌ | `false` |
 | `secret-env-vars` | Comma-separated env var names whose values are stripped from shell/MCP environments and redacted from output/logs (e.g., `"API_KEY,DB_PASSWORD"`) | ❌ | - |
 | **MCP Configuration** | | | |
 | `enable-all-github-mcp-tools` | Enable all GitHub MCP tools | ❌ | `false` |

@@ -133,7 +133,7 @@ inputs:
     required: false
     default: false
   allow-all-paths:
-    description: 'Allow access to all file paths without approval'
+    description: 'Allow access to all file paths without approval. When false (default), the agent is scoped to $GITHUB_WORKSPACE instead of the entire filesystem.'
     required: false
     default: false
   context:
@@ -230,7 +230,13 @@ runs:
         echo "::group::Copilot Options"
         COPILOT_ARGS=""
 
-        COPILOT_ARGS+="--add-dir / "
+        # Default to the checked-out workspace instead of the whole filesystem.
+        # Root access is opt-in via allow-all-paths to limit untrusted-prompt blast radius (#70).
+        if [ "$ALLOW_ALL_PATHS" = "true" ]; then
+          COPILOT_ARGS+="--add-dir / "
+        else
+          COPILOT_ARGS+="--add-dir $GITHUB_WORKSPACE "
+        fi
         if [ -n "$ADDITIONAL_DIRS" ]; then
           IFS=',' read -ra DIRS <<< "$ADDITIONAL_DIRS"
           for dir in "${DIRS[@]}"; do
