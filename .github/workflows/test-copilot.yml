@@ -1,9 +1,28 @@
+name: Test Copilot CLI
+
 on:
   push:
+    branches: [main]
+    paths:
+      - action.yml
+      - .github/workflows/test-copilot.yml
+  pull_request:
+    paths:
+      - action.yml
+      - .github/workflows/test-copilot.yml
+  schedule:
+    # Nightly drift check — the action installs @github/copilot@prerelease at
+    # runtime, so this is the only thing that catches a breaking CLI release.
+    - cron: '0 7 * * *'
   workflow_dispatch:
 
 permissions:
+  contents: read
   copilot-requests: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   # Basic smoke test — defaults only
@@ -11,7 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: austenstone/copilot-cli@notoken
+      - uses: ./
         id: copilot
         with:
           prompt: "Say 'hello world' and nothing else."
@@ -26,7 +45,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: austenstone/copilot-cli@notoken
+      - uses: ./
         with:
           prompt: "Create a file called test.txt with the content 'autopilot works'. Then read it back to confirm."
           max-turns: 3
@@ -40,7 +59,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: austenstone/copilot-cli@notoken
+      - uses: ./
         with:
           prompt: "Say 'silent mode works' and nothing else."
           silent: true
@@ -51,7 +70,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: austenstone/copilot-cli@notoken
+      - uses: ./
         with:
           prompt: "What model are you? Reply with just your model name."
           model: claude-sonnet-4
@@ -63,7 +82,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: austenstone/copilot-cli@notoken
+      - uses: ./
         with:
           prompt: "Say 'json works'."
           output-format: json
@@ -74,7 +93,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: austenstone/copilot-cli@notoken
+      - uses: ./
         with:
           prompt: "Try to run 'echo hello' in a shell. If you can't, just say 'shell denied'."
           denied-tools: "shell"
@@ -85,7 +104,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: austenstone/copilot-cli@notoken
+      - uses: ./
         with:
           prompt: "Use the GitHub MCP to get info about the repo austenstone/copilot-cli. Tell me the description and star count."
           add-github-mcp-toolsets: "repos"
@@ -96,7 +115,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: austenstone/copilot-cli@notoken
+      - uses: ./
         with:
           prompt: "List your available MCP servers. If none, say 'no MCP servers available'."
           disable-builtin-mcps: true
@@ -107,7 +126,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: austenstone/copilot-cli@notoken
+      - uses: ./
         with:
           prompt: "Fetch https://api.github.com/zen and tell me what it says."
           allowed-urls: "api.github.com"
@@ -119,7 +138,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: austenstone/copilot-cli@notoken
+      - uses: ./
         id: copilot
         with:
           prompt: "Say 'session sharing works'."
@@ -136,7 +155,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: austenstone/copilot-cli@notoken
+      - uses: ./
         with:
           prompt: "Say 'experimental mode active'."
           experimental: true
@@ -150,7 +169,7 @@ jobs:
       - run: |
           mkdir -p /tmp/copilot-test
           echo "found me" > /tmp/copilot-test/secret.txt
-      - uses: austenstone/copilot-cli@notoken
+      - uses: ./
         with:
           prompt: "Read the file /tmp/copilot-test/secret.txt and tell me its contents."
           additional-directories: "/tmp/copilot-test"
@@ -161,7 +180,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: austenstone/copilot-cli@notoken
+      - uses: ./
         with:
           prompt: "What files are in this repo?"
           agent: explore
@@ -172,7 +191,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: austenstone/copilot-cli@notoken
+      - uses: ./
         id: copilot
         continue-on-error: true
         with:
@@ -189,7 +208,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: austenstone/copilot-cli@notoken
+      - uses: ./
         with:
           prompt: "Say 'config test passed'."
           copilot-config: |
