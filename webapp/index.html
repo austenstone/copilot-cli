@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>✨ Color Palette Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: #fff;
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            animation: fadeIn 0.8s ease-in;
+        }
+
+        .subtitle {
+            text-align: center;
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 30px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-primary {
+            background: #fff;
+            color: #667eea;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .palette-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .color-card {
+            background: white;
+            border-radius: 15px;
+            padding: 0;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            overflow: hidden;
+            animation: slideUp 0.5s ease-out backwards;
+        }
+
+        .color-card:hover {
+            transform: translateY(-10px) scale(1.05);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .color-preview {
+            height: 150px;
+            width: 100%;
+            position: relative;
+            transition: height 0.3s ease;
+        }
+
+        .color-card:hover .color-preview {
+            height: 170px;
+        }
+
+        .color-info {
+            padding: 15px;
+            background: white;
+            color: #333;
+        }
+
+        .color-code {
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+            text-align: center;
+        }
+
+        .color-name {
+            font-size: 0.9rem;
+            color: #666;
+            text-align: center;
+        }
+
+        .copy-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #4CAF50;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .copy-indicator.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .saved-palettes {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px;
+            margin-top: 2rem;
+        }
+
+        .saved-palettes h2 {
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+
+        .saved-palette-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .saved-palette-item:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(5px);
+        }
+
+        .saved-color-preview {
+            width: 40px;
+            height: 40px;
+            border-radius: 5px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .lock-icon {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+
+        .lock-icon:hover {
+            transform: scale(1.1);
+        }
+
+        .lock-icon.locked {
+            background: #FFD700;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            .palette-grid {
+                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+                gap: 1rem;
+            }
+        }
+
+        .footer {
+            margin-top: 3rem;
+            text-align: center;
+            opacity: 0.8;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>✨ Color Palette Generator</h1>
+        <p class="subtitle">Click any color to copy its hex code • Lock colors to keep them while generating new palettes</p>
+        
+        <div class="controls">
+            <button class="btn-primary" onclick="generatePalette()">🎨 Generate New Palette</button>
+            <button class="btn-secondary" onclick="savePalette()">💾 Save Palette</button>
+            <button class="btn-secondary" onclick="clearSaved()">🗑️ Clear Saved</button>
+        </div>
+
+        <div class="palette-grid" id="paletteGrid"></div>
+
+        <div class="saved-palettes" id="savedPalettes" style="display: none;">
+            <h2>💝 Saved Palettes</h2>
+            <div id="savedPalettesList"></div>
+        </div>
+
+        <div class="footer">
+            <p>Press SPACE to generate a new palette • Click colors to copy</p>
+        </div>
+    </div>
+
+    <div class="copy-indicator" id="copyIndicator">Copied to clipboard! ✓</div>
+
+    <script>
+        let currentPalette = [];
+        let lockedColors = new Set();
+        const paletteSize = 5;
+
+        // Color names for fun descriptions
+        const colorNames = [
+            'Sunset', 'Ocean', 'Forest', 'Lavender', 'Coral',
+            'Mint', 'Peach', 'Sky', 'Rose', 'Amber',
+            'Teal', 'Violet', 'Crimson', 'Azure', 'Jade',
+            'Sapphire', 'Ruby', 'Emerald', 'Pearl', 'Honey'
+        ];
+
+        // Generate a random color
+        function randomColor() {
+            // Generate random color from 0x000000 to 0xFFFFFF
+            const randomInt = Math.floor(Math.random() * 0x1000000);
+            return '#' + randomInt.toString(16).padStart(6, '0');
+        }
+
+        // Get a random color name
+        function randomColorName() {
+            return colorNames[Math.floor(Math.random() * colorNames.length)];
+        }
+
+        // Generate the color palette
+        function generatePalette() {
+            const grid = document.getElementById('paletteGrid');
+            
+            // Keep locked colors, generate new ones for unlocked
+            for (let i = 0; i < paletteSize; i++) {
+                if (!lockedColors.has(i)) {
+                    currentPalette[i] = {
+                        hex: randomColor(),
+                        name: randomColorName()
+                    };
+                }
+            }
+
+            // Render the palette
+            grid.innerHTML = '';
+            currentPalette.forEach((color, index) => {
+                const card = document.createElement('div');
+                card.className = 'color-card';
+                card.style.animationDelay = `${index * 0.1}s`;
+                
+                const isLocked = lockedColors.has(index);
+                
+                card.innerHTML = `
+                    <div class="color-preview" style="background-color: ${color.hex}">
+                        <button class="lock-icon ${isLocked ? 'locked' : ''}" onclick="toggleLock(${index}, event)">
+                            ${isLocked ? '🔒' : '🔓'}
+                        </button>
+                    </div>
+                    <div class="color-info">
+                        <div class="color-code">${color.hex.toUpperCase()}</div>
+                        <div class="color-name">${color.name}</div>
+                    </div>
+                `;
+                
+                card.onclick = (e) => {
+                    if (!e.target.classList.contains('lock-icon')) {
+                        copyToClipboard(color.hex);
+                    }
+                };
+                
+                grid.appendChild(card);
+            });
+        }
+
+        // Toggle color lock
+        function toggleLock(index, event) {
+            event.stopPropagation();
+            if (lockedColors.has(index)) {
+                lockedColors.delete(index);
+            } else {
+                lockedColors.add(index);
+            }
+            generatePalette();
+        }
+
+        // Copy color to clipboard
+        function copyToClipboard(text) {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(() => {
+                    showCopyIndicator();
+                }).catch((err) => {
+                    console.error('Failed to copy:', err);
+                    // Fallback for older browsers
+                    fallbackCopyToClipboard(text);
+                });
+            } else {
+                fallbackCopyToClipboard(text);
+            }
+        }
+
+        // Fallback copy method for browsers without clipboard API
+        function fallbackCopyToClipboard(text) {
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            textArea.style.position = 'fixed';
+            textArea.style.top = '0';
+            textArea.style.left = '-999999px';
+            textArea.setAttribute('readonly', '');
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                showCopyIndicator();
+            } catch (err) {
+                console.error('Fallback copy failed:', err);
+            }
+            document.body.removeChild(textArea);
+        }
+
+        // Show copy indicator
+        function showCopyIndicator() {
+            const indicator = document.getElementById('copyIndicator');
+            indicator.classList.add('show');
+            setTimeout(() => {
+                indicator.classList.remove('show');
+            }, 2000);
+        }
+
+        // Save palette to local storage
+        function savePalette() {
+            const saved = JSON.parse(localStorage.getItem('savedPalettes') || '[]');
+            const paletteData = currentPalette.map(c => c.hex);
+            saved.push({
+                colors: paletteData,
+                date: new Date().toLocaleString()
+            });
+            localStorage.setItem('savedPalettes', JSON.stringify(saved));
+            displaySavedPalettes();
+            
+            // Show confirmation
+            const indicator = document.getElementById('copyIndicator');
+            indicator.textContent = 'Palette saved! 💾';
+            indicator.style.background = '#2196F3';
+            indicator.classList.add('show');
+            setTimeout(() => {
+                indicator.classList.remove('show');
+                indicator.textContent = 'Copied to clipboard! ✓';
+                indicator.style.background = '#4CAF50';
+            }, 2000);
+        }
+
+        // Display saved palettes
+        function displaySavedPalettes() {
+            const saved = JSON.parse(localStorage.getItem('savedPalettes') || '[]');
+            const container = document.getElementById('savedPalettes');
+            const list = document.getElementById('savedPalettesList');
+            
+            if (saved.length === 0) {
+                container.style.display = 'none';
+                return;
+            }
+            
+            container.style.display = 'block';
+            list.innerHTML = '';
+            
+            // Display in reverse order (newest first) but keep original indices
+            const reversedSaved = [...saved].reverse();
+            reversedSaved.forEach((palette, index) => {
+                const item = document.createElement('div');
+                item.className = 'saved-palette-item';
+                const originalIndex = saved.length - 1 - index;
+                item.onclick = () => loadPalette(originalIndex);
+                
+                const colorsHTML = palette.colors.map(color => 
+                    `<div class="saved-color-preview" style="background-color: ${color}"></div>`
+                ).join('');
+                
+                item.innerHTML = `
+                    ${colorsHTML}
+                    <span style="margin-left: auto; font-size: 0.85rem; opacity: 0.8;">${palette.date}</span>
+                `;
+                
+                list.appendChild(item);
+            });
+        }
+
+        // Load a saved palette
+        function loadPalette(index) {
+            const saved = JSON.parse(localStorage.getItem('savedPalettes') || '[]');
+            const palette = saved[index];
+            
+            currentPalette = palette.colors.map(hex => ({
+                hex: hex,
+                name: randomColorName()
+            }));
+            
+            lockedColors.clear();
+            generatePalette();
+        }
+
+        // Clear saved palettes
+        function clearSaved() {
+            if (confirm('Are you sure you want to clear all saved palettes?')) {
+                localStorage.removeItem('savedPalettes');
+                displaySavedPalettes();
+            }
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                generatePalette();
+            }
+        });
+
+        // Initialize
+        generatePalette();
+        displaySavedPalettes();
+    </script>
+</body>
+</html>
