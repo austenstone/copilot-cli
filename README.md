@@ -8,6 +8,9 @@ A GitHub Action wrapper for the [GitHub Copilot CLI](https://docs.github.com/en/
 
 Add the `copilot-requests: write` permission to your workflow. The default `GITHUB_TOKEN` now handles Copilot authentication — **no PAT required**.
 
+> [!IMPORTANT]
+> Declaring a `permissions:` block sets every scope you do not list to `none`. Always include `contents: read` if you check out the repo, and `copilot-requests: write` or Copilot auth will fail.
+
 > [!NOTE]
 > Your organization must have the **"Allow use of Copilot CLI billed to the organization"** policy enabled.
 
@@ -20,15 +23,17 @@ name: 'Copilot Automation'
 on: [pull_request]
 
 permissions:
+  contents: read
   copilot-requests: write
   pull-requests: write
 
 jobs:
   copilot:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - name: 'Checkout Repository'
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: 'Run Copilot CLI'
         uses: austenstone/copilot-cli@v3
@@ -82,11 +87,11 @@ Use `secret-env-vars` to strip and redact sensitive values from shell/MCP enviro
 | `prompt` | Natural language prompt to send to GitHub Copilot | ✅ | - |
 | `copilot-token` | *(Deprecated)* Override token for Copilot auth. The default `github.token` now works. | ❌ | `github.token` |
 | `repo-token` | Token for repository operations (`gh` CLI). Use a PAT if the agent needs elevated permissions. | ❌ | `github.token` |
-| `copilot-config` | GitHub Copilot CLI configuration (JSON) | ❌ | See below |
+| `copilot-config` | Copilot CLI settings (JSON), merged into `~/.copilot/settings.json` | ❌ | See below |
 | `mcp-config` | MCP server configuration in JSON format | ❌ | - |
 | **Agent Behavior** | | | |
 | `autopilot` | Enable autopilot continuation in prompt mode | ❌ | `true` |
-| `max-turns` | Maximum number of autopilot continuation turns | ❌ | `5` |
+| `max-turns` | Maximum number of autopilot continuation turns | ❌ | CLI default (`5`) |
 | `mode` | Initial agent mode (`interactive`, `plan`, or `autopilot`). When set, it overrides the autopilot toggle. | ❌ | - |
 | `no-ask-user` | Disable ask_user tool for fully autonomous CI execution | ❌ | `true` |
 | `silent` | Output only the agent response without usage statistics | ❌ | `false` |
@@ -130,7 +135,7 @@ Use `secret-env-vars` to strip and redact sensitive values from shell/MCP enviro
 | `log-level` | Log level: `none`, `error`, `warning`, `info`, `debug`, `all` | ❌ | `all` |
 | `upload-artifact` | Upload Copilot logs as workflow artifacts | ❌ | `true` |
 | `fail-on-error` | Fail the step if Copilot CLI exits with non-zero code | ❌ | `false` |
-| `copilot-version` | Version of Copilot CLI to install (e.g., `"1.0.63"`) | ❌ | `prerelease` |
+| `copilot-version` | Version of Copilot CLI to install (e.g., `"1.0.80"`, or `prerelease` for the bleeding-edge channel) | ❌ | `latest` |
 | `options` | Additional CLI flags (e.g., `"--no-custom-instructions"`) | ❌ | `--screen-reader --no-color --stream off` |
 
 ### Output Parameters
@@ -155,13 +160,14 @@ The action supports Model Context Protocol (MCP) servers for extending Copilot's
 
 | Workflow | Description |
 |----------|-------------|
+| [Actions Report](.github/workflows/copilot-actions-report.yml) | Analyzes the last 100 workflow runs and opens a workflow optimization report issue |
 | [CI Fix](.github/workflows/copilot-ci-fix.yml) | Automatically analyzes failed workflow runs and creates a pull request with fixes |
 | [Comment Trigger](.github/workflows/copilot-comment.yml) | Responds to issue comments starting with `/copilot` and executes the requested task |
 | [Dependabot Analysis](.github/workflows/copilot-dependabot-update.yml) | Reviews Dependabot PRs with detailed dependency analysis, breaking changes, and migration guidance |
 | [PR Review](.github/workflows/copilot-pr-review.yml) | Performs comprehensive autonomous code reviews on pull requests with severity-based feedback |
 | [Research](.github/workflows/copilot-research.yml) | Conducts deep research on GitHub issues using Firecrawl to gather and synthesize information |
 | [Security Triage](.github/workflows/copilot-security-triage.yml) | Triages all security alerts (Dependabot, Secret Scanning, Code Scanning) into a single comprehensive report |
-| [Issue Triage](.github/workflows/copilot-triage.yml) | Automatically labels issues based on their title and content using existing repository labels |
+| [Issue Triage](.github/workflows/copilot-labeler.yml) | Automatically labels issues based on their title and content using existing repository labels |
 | [Usage Report](.github/workflows/copilot-usage-report.yml) | Generates comprehensive Copilot usage reports and analytics |
 
 </details>
@@ -173,29 +179,35 @@ The action supports Model Context Protocol (MCP) servers for extending Copilot's
 
 ### Common Issues
 
-1. **"Copilot token required" / Permission Denied**
+1. **"Copilot token required" / "Authentication failed" / Permission Denied**
    - Ensure your workflow has `copilot-requests: write` permission
+   - If you declare **any** `permissions:` block, you must list `copilot-requests: write` explicitly. Declaring a block drops every scope you do not name, and Copilot auth fails without it.
    - Your org must enable the **"Allow use of Copilot CLI billed to the organization"** policy
    - If using a legacy PAT, ensure it has the "Copilot Requests" permission
 
-2. **Copilot starts but permission denied on repo operations**
+2. **Job is green but Copilot did nothing**
+   - `fail-on-error` defaults to `false`, so a failed Copilot run still passes the step
+   - Check the job log for a `Copilot CLI exited with code ...` warning, which usually means missing `copilot-requests: write`
+   - Set `fail-on-error: true` to turn these into hard failures
+
+3. **Copilot starts but permission denied on repo operations**
    - Add appropriate permissions (e.g., `contents: write`, `pull-requests: write`)
    - Check Settings > Actions > General > Workflow permissions
 
-3. **Tool Access Denied**
+4. **Tool Access Denied**
    - Check your `allowed-tools` and `denied-tools` configuration
    - If `allow-all-tools: false`, you must explicitly allow needed tools
 
-4. **MCP Server Connection Issues**
+5. **MCP Server Connection Issues**
    - Verify MCP server URLs are accessible from GitHub-hosted runners
    - Check authentication headers and tokens
    - Ensure `type` is set correctly (`local`, `http`, or `sse`)
 
-5. **Session Resume Not Working**
+6. **Session Resume Not Working**
    - Session data is stored in logs; ensure `upload-artifact: true`
    - Use `resume-session: latest` to continue the most recent session
 
-6. **Large Output Truncation**
+7. **Large Output Truncation**
    - Set `log-level: error` or `log-level: warning` to reduce verbosity
    - Break complex prompts into smaller, focused tasks
 
