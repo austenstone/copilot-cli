@@ -36,7 +36,7 @@ jobs:
         uses: actions/checkout@v7
 
       - name: 'Run Copilot CLI'
-        uses: austenstone/copilot-cli@v3
+        uses: austenstone/copilot-cli@v4
         with:
           prompt: |
             Review this pull request for:
@@ -69,7 +69,7 @@ Use `secret-env-vars` to strip and redact sensitive values from shell/MCP enviro
 
 ```yaml
       - name: 'Run Copilot CLI'
-        uses: austenstone/copilot-cli@v3
+        uses: austenstone/copilot-cli@v4
         env:
           API_KEY: ${{ secrets.API_KEY }}
         with:
