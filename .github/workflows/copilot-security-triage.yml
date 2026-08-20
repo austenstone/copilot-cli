@@ -1,11 +1,18 @@
 on:
   workflow_dispatch:
 
+permissions:
+  contents: read
+  issues: write
+  security-events: read
+  copilot-requests: write
+
 jobs:
   triage-alerts:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: austenstone/copilot-cli@main
         with:
           enable-all-github-mcp-tools: true

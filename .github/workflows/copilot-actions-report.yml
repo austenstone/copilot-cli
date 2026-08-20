@@ -3,11 +3,18 @@ on:
     - cron: '0 0 1 * *'
   workflow_dispatch:
 
+permissions:
+  contents: read
+  actions: read
+  issues: write
+  copilot-requests: write
+
 jobs:
   actions-report:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: austenstone/copilot-cli@main
         with:
           mcp-config: |
