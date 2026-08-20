@@ -56,6 +56,39 @@ jobs:
       - name: Verify exit code output
         run: test "${{ steps.copilot.outputs.exit-code }}" = "0"
 
+  # Ranges contain '>' which shell-redirects if the npm spec isn't quoted.
+  version-spec:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: ./
+        id: copilot
+        with:
+          prompt: "Say 'version spec works' and nothing else."
+          copilot-version: '>=1.0.80'
+          max-turns: 1
+      - name: Verify exit code output
+        run: test "${{ steps.copilot.outputs.exit-code }}" = "0"
+
+  # The default copilot-version is pinned for reproducibility, so it needs a nudge
+  # when it falls behind. Only fails on the nightly schedule so PRs aren't blocked
+  # every time the CLI ships.
+  version-pin-drift:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Compare pinned default against registry latest
+        run: |
+          PINNED=$(python3 -c "import yaml;print(yaml.safe_load(open('action.yml'))['inputs']['copilot-version']['default'])")
+          LATEST=$(npm view --registry=https://registry.npmjs.org '@github/copilot@latest' version)
+          echo "pinned=\`$PINNED\` latest=\`$LATEST\`" >> "$GITHUB_STEP_SUMMARY"
+          if [ "$PINNED" = "$LATEST" ]; then
+            echo "Pinned default is current ($PINNED)."
+            exit 0
+          fi
+          echo "::warning::copilot-version default is pinned to $PINNED but @latest is $LATEST"
+          test "${{ github.event_name }}" != "schedule"
+
   # Test autopilot + max-turns limit with tool use
   autopilot:
     runs-on: ubuntu-latest

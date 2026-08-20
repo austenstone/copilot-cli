@@ -58,9 +58,9 @@ inputs:
     description: 'Comma-separated list of URLs or domains to deny (e.g., "evil.com")'
     required: false
   copilot-version:
-    description: 'Version of Copilot CLI to install (e.g., "latest", "prerelease", "1.0.80")'
+    description: 'Version spec of the Copilot CLI to install. Examples: 1.0.80, 1.x, >=1.0.80, latest, prerelease.'
     required: false
-    default: 'latest'
+    default: '1.0.80'
   model:
     description: 'Model to use (e.g., "claude-sonnet-4.6", "claude-opus-4.8", "gpt-5.5")'
     required: false
@@ -192,13 +192,9 @@ runs:
         # Script
 
         echo "::group::Install GitHub Copilot CLI"
-        if [ "$COPILOT_VERSION" = "latest" ]; then
-          npm install -g @github/copilot
-        elif [ "$COPILOT_VERSION" = "prerelease" ]; then
-          npm install -g @github/copilot@prerelease
-        else
-          npm install -g @github/copilot@$COPILOT_VERSION
-        fi
+        # Quoted so semver ranges (">=1.0.80") aren't parsed as shell redirection.
+        npm install -g "@github/copilot@$COPILOT_VERSION"
+        RESOLVED_VERSION=$(npm ls -g --depth 0 --json 2>/dev/null | jq -r '.dependencies["@github/copilot"].version // empty')
         echo "CLI Version: $(copilot --version)"
         echo "::endgroup::"
 
