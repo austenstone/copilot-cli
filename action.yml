@@ -19,14 +19,12 @@ inputs:
     description: 'MCP configuration for GitHub Copilot [Link](https://docs.github.com/en/copilot/how-tos/use-copilot-agents/coding-agent/extend-coding-agent-with-mcp#writing-a-json-configuration-for-mcp-servers)'
     required: false
   copilot-config:
-    description: 'Configuration for GitHub Copilot'
+    description: 'Configuration for GitHub Copilot, merged into ~/.copilot/settings.json'
     required: false
     default: |
       {
         "banner": "never",
-        "renderMarkdown": true,
-        "theme": "auto",
-        "trustedFolders": []
+        "renderMarkdown": true
       }
   autopilot:
     description: 'Enable autopilot continuation in prompt mode'
@@ -60,9 +58,9 @@ inputs:
     description: 'Comma-separated list of URLs or domains to deny (e.g., "evil.com")'
     required: false
   copilot-version:
-    description: 'Version of Copilot CLI to install (e.g., "latest", "prerelease", "1.0.63")'
+    description: 'Version spec of the Copilot CLI to install. Examples: 1.0.80, 1.x, >=1.0.80, latest, prerelease.'
     required: false
-    default: 'prerelease'
+    default: '1.0.80'
   model:
     description: 'Model to use (e.g., "claude-sonnet-4.6", "claude-opus-4.8", "gpt-5.5")'
     required: false
@@ -194,21 +192,35 @@ runs:
         # Script
 
         echo "::group::Install GitHub Copilot CLI"
-        if [ "$COPILOT_VERSION" = "latest" ]; then
-          npm install -g @github/copilot
-        elif [ "$COPILOT_VERSION" = "prerelease" ]; then
-          npm install -g @github/copilot@prerelease
-        else
-          npm install -g @github/copilot@$COPILOT_VERSION
-        fi
+        # Quoted so semver ranges (">=1.0.80") aren't parsed as shell redirection.
+        npm install -g "@github/copilot@$COPILOT_VERSION"
+        CLI_VERSION=$(copilot --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.]+)?' | head -1)
         echo "CLI Version: $(copilot --version)"
         echo "::endgroup::"
 
         if [ -n "$CONFIG" ]; then
           echo "::group::Configure Copilot"
-          mkdir -p $HOME/.copilot
-          echo "$CONFIG" > $HOME/.copilot/config.json
-          cat $HOME/.copilot/config.json
+          if ! jq -e . >/dev/null 2>&1 <<< "$CONFIG"; then
+            echo "::error::copilot-config is not valid JSON"
+            exit 1
+          fi
+          mkdir -p "$HOME/.copilot"
+          # User settings moved out of config.json in CLI 1.0.35. Older pins never
+          # read settings.json, so write to whichever file this version actually reads.
+          SETTINGS_TARGET="$HOME/.copilot/settings.json"
+          if [ -n "$CLI_VERSION" ] && [ "$(printf '%s\n1.0.35\n' "$CLI_VERSION" | sort -V | head -1)" != "1.0.35" ]; then
+            SETTINGS_TARGET="$HOME/.copilot/config.json"
+            echo "::warning::Copilot CLI $CLI_VERSION predates settings.json (added in 1.0.35); writing copilot-config to config.json instead"
+          fi
+          if [ -s "$SETTINGS_TARGET" ]; then
+            # Newer config.json ships // comments, which jq cannot parse.
+            EXISTING=$(sed 's|^[[:space:]]*//.*$||' "$SETTINGS_TARGET")
+            jq -s '.[0] * .[1]' <(printf '%s' "${EXISTING:-\{\}}") - <<< "$CONFIG" > "$SETTINGS_TARGET.tmp" \
+              && mv "$SETTINGS_TARGET.tmp" "$SETTINGS_TARGET"
+          else
+            jq '.' <<< "$CONFIG" > "$SETTINGS_TARGET"
+          fi
+          cat "$SETTINGS_TARGET"
           echo "::endgroup::"
         fi
         
@@ -472,7 +484,7 @@ runs:
         DISALLOW_TEMP_DIR: ${{ inputs.disallow-temp-dir }}
         PLUGIN_DIR: ${{ inputs.plugin-dir }}
     - name: Upload Copilot Artifacts
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       if: ${{ always() && inputs.upload-artifact == 'true' }}
       with:
         name: copilot-logs-${{ github.job }}-${{ github.run_id }}-${{ github.run_attempt }}
