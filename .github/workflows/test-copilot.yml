@@ -278,6 +278,37 @@ jobs:
           test "$(jq -r '.renderMarkdown' ~/.copilot/settings.json)" = "false"
           test "$(jq -r '.beep' ~/.copilot/settings.json)" = "true"
 
+  # Pre-1.0.35 CLIs never read settings.json, so config must land in config.json
+  config-legacy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: ./
+        with:
+          prompt: "Say 'legacy config test passed'."
+          copilot-version: '1.0.34'
+          copilot-config: '{"banner":"never"}'
+          max-turns: 1
+      - name: Verify config landed in config.json, not settings.json
+        run: |
+          test "$(jq -r '.banner' ~/.copilot/config.json)" = "never"
+          test ! -s ~/.copilot/settings.json
+
+  # Invalid copilot-config must fail fast rather than silently no-op
+  config-invalid:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - id: bad
+        continue-on-error: true
+        uses: ./
+        with:
+          prompt: "Should never run."
+          copilot-config: '{not valid json'
+          max-turns: 1
+      - name: Verify the action rejected it
+        run: test "${{ steps.bad.outcome }}" = "failure"
+
   # Test long context window selection
   context:
     runs-on: ubuntu-latest
