@@ -11,8 +11,9 @@ on:
       - action.yml
       - .github/workflows/test-copilot.yml
   schedule:
-    # Nightly drift check — the action installs @github/copilot@prerelease at
-    # runtime, so this is the only thing that catches a breaking CLI release.
+    # Nightly drift check — the prerelease-drift job installs @github/copilot@prerelease,
+    # so this is the only thing that catches a breaking CLI release before it reaches
+    # the stable `latest` channel that consumers get by default.
     - cron: '0 7 * * *'
   workflow_dispatch:
 
@@ -39,6 +40,21 @@ jobs:
         run: |
           echo "Exit code: ${{ steps.copilot.outputs.exit-code }}"
           test "${{ steps.copilot.outputs.exit-code }}" = "0"
+
+  # Early warning for breaking changes in the prerelease CLI channel.
+  # The action defaults to `latest`, so this is what catches drift before consumers hit it.
+  prerelease-drift:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: ./
+        id: copilot
+        with:
+          prompt: "Say 'prerelease works' and nothing else."
+          copilot-version: prerelease
+          max-turns: 1
+      - name: Verify exit code output
+        run: test "${{ steps.copilot.outputs.exit-code }}" = "0"
 
   # Test autopilot + max-turns limit with tool use
   autopilot:
@@ -203,22 +219,31 @@ jobs:
           echo "Exit code: ${{ steps.copilot.outputs.exit-code }}"
           echo "Step outcome: ${{ steps.copilot.outcome }}"
 
-  # Test copilot-config is applied
+  # Test copilot-config is merged into settings.json
   config:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+      - name: Seed a pre-existing user setting
+        run: |
+          mkdir -p ~/.copilot
+          echo '{"beep":true}' > ~/.copilot/settings.json
       - uses: ./
         with:
           prompt: "Say 'config test passed'."
           copilot-config: |
             {
               "banner": "never",
-              "render_markdown": false,
-              "theme": "dark",
-              "trusted_folders": []
+              "renderMarkdown": false,
+              "theme": "dim"
             }
           max-turns: 1
+      - name: Verify settings.json merged without clobbering
+        run: |
+          cat ~/.copilot/settings.json
+          test "$(jq -r '.theme' ~/.copilot/settings.json)" = "dim"
+          test "$(jq -r '.renderMarkdown' ~/.copilot/settings.json)" = "false"
+          test "$(jq -r '.beep' ~/.copilot/settings.json)" = "true"
 
   # Test long context window selection
   context:

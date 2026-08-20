@@ -19,14 +19,12 @@ inputs:
     description: 'MCP configuration for GitHub Copilot [Link](https://docs.github.com/en/copilot/how-tos/use-copilot-agents/coding-agent/extend-coding-agent-with-mcp#writing-a-json-configuration-for-mcp-servers)'
     required: false
   copilot-config:
-    description: 'Configuration for GitHub Copilot'
+    description: 'Configuration for GitHub Copilot, merged into ~/.copilot/settings.json'
     required: false
     default: |
       {
         "banner": "never",
-        "renderMarkdown": true,
-        "theme": "auto",
-        "trustedFolders": []
+        "renderMarkdown": true
       }
   autopilot:
     description: 'Enable autopilot continuation in prompt mode'
@@ -60,9 +58,9 @@ inputs:
     description: 'Comma-separated list of URLs or domains to deny (e.g., "evil.com")'
     required: false
   copilot-version:
-    description: 'Version of Copilot CLI to install (e.g., "latest", "prerelease", "1.0.63")'
+    description: 'Version of Copilot CLI to install (e.g., "latest", "prerelease", "1.0.80")'
     required: false
-    default: 'prerelease'
+    default: 'latest'
   model:
     description: 'Model to use (e.g., "claude-sonnet-4.6", "claude-opus-4.8", "gpt-5.5")'
     required: false
@@ -206,9 +204,16 @@ runs:
 
         if [ -n "$CONFIG" ]; then
           echo "::group::Configure Copilot"
-          mkdir -p $HOME/.copilot
-          echo "$CONFIG" > $HOME/.copilot/config.json
-          cat $HOME/.copilot/config.json
+          mkdir -p "$HOME/.copilot"
+          # User settings belong in settings.json. config.json is CLI-managed state
+          # (loggedInUsers, installedPlugins) and clobbering it breaks persistent runners.
+          SETTINGS="$HOME/.copilot/settings.json"
+          if [ -s "$SETTINGS" ]; then
+            jq -s '.[0] * .[1]' "$SETTINGS" - <<< "$CONFIG" > "$SETTINGS.tmp" && mv "$SETTINGS.tmp" "$SETTINGS"
+          else
+            jq '.' <<< "$CONFIG" > "$SETTINGS"
+          fi
+          cat "$SETTINGS"
           echo "::endgroup::"
         fi
         
@@ -472,7 +477,7 @@ runs:
         DISALLOW_TEMP_DIR: ${{ inputs.disallow-temp-dir }}
         PLUGIN_DIR: ${{ inputs.plugin-dir }}
     - name: Upload Copilot Artifacts
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       if: ${{ always() && inputs.upload-artifact == 'true' }}
       with:
         name: copilot-logs-${{ github.job }}-${{ github.run_id }}-${{ github.run_attempt }}
