@@ -62,7 +62,7 @@ jobs:
   version-spec:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: ./
         id: copilot
         with:
@@ -78,7 +78,7 @@ jobs:
   version-pin-drift:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - name: Compare pinned default against registry latest
         run: |
           PINNED=$(python3 -c "import yaml;print(yaml.safe_load(open('action.yml'))['inputs']['copilot-version']['default'])")
@@ -298,7 +298,7 @@ jobs:
   config-legacy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: ./
         with:
           prompt: "Say 'legacy config test passed'."
@@ -314,7 +314,7 @@ jobs:
   config-invalid:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - id: bad
         continue-on-error: true
         uses: ./
@@ -464,3 +464,23 @@ jobs:
           prompt: "Say 'readme example works'."
           max-turns: 1
           fail-on-error: true
+
+  # Newly added jobs have twice drifted onto stale action majors after a bulk
+  # upgrade, and a stale major silently reintroduces the Node 20 deprecation.
+  action-major-drift:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+      - name: Fail on outdated first-party action majors
+        run: |
+          STALE=$(grep -rnoE 'uses: actions/(checkout|upload-artifact|setup-node)@v[0-9]+' .github/workflows \
+            | grep -vE 'checkout@v7|upload-artifact@v7|setup-node@v6' || true)
+          if [ -n "$STALE" ]; then
+            echo "::error::Outdated action majors found:"
+            echo "$STALE"
+            exit 1
+          fi
+          echo "All first-party action majors are current."
