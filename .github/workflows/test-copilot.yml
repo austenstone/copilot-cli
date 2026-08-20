@@ -447,3 +447,20 @@ jobs:
           prompt: "Say hello and exit."
           disallow-temp-dir: true
           max-turns: 1
+
+  # Mirrors the README quickstart exactly. Scoped job permissions catch the
+  # trap where declaring a block drops contents/copilot-requests to none.
+  readme-example:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      copilot-requests: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./
+        with:
+          prompt: "Say 'readme example works'."
+          max-turns: 1
+          fail-on-error: true
