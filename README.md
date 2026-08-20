@@ -87,7 +87,7 @@ Use `secret-env-vars` to strip and redact sensitive values from shell/MCP enviro
 | `prompt` | Natural language prompt to send to GitHub Copilot | ✅ | - |
 | `copilot-token` | *(Deprecated)* Override token for Copilot auth. The default `github.token` now works. | ❌ | `github.token` |
 | `repo-token` | Token for repository operations (`gh` CLI). Use a PAT if the agent needs elevated permissions. | ❌ | `github.token` |
-| `copilot-config` | Copilot CLI settings (JSON), merged into `~/.copilot/settings.json` | ❌ | See below |
+| `copilot-config` | Copilot CLI settings (JSON), merged into `~/.copilot/settings.json` (or `config.json` on CLIs older than `1.0.35`) | ❌ | See below |
 | `mcp-config` | MCP server configuration in JSON format | ❌ | - |
 | **Agent Behavior** | | | |
 | `autopilot` | Enable autopilot continuation in prompt mode | ❌ | `true` |
@@ -135,8 +135,27 @@ Use `secret-env-vars` to strip and redact sensitive values from shell/MCP enviro
 | `log-level` | Log level: `none`, `error`, `warning`, `info`, `debug`, `all` | ❌ | `all` |
 | `upload-artifact` | Upload Copilot logs as workflow artifacts | ❌ | `true` |
 | `fail-on-error` | Fail the step if Copilot CLI exits with non-zero code | ❌ | `false` |
-| `copilot-version` | Version of Copilot CLI to install (e.g., `"1.0.80"`, or `prerelease` for the bleeding-edge channel) | ❌ | `latest` |
+| `copilot-version` | Version spec of the Copilot CLI to install. Examples: `1.0.80`, `1.x`, `>=1.0.80`, `latest`, `prerelease`. | ❌ | `1.0.80` |
 | `options` | Additional CLI flags (e.g., `"--no-custom-instructions"`) | ❌ | `--screen-reader --no-color --stream off` |
+
+### Pinning the Copilot CLI version
+
+The action installs a pinned, known-good CLI by default so a CLI release can't
+change your workflow's behavior overnight. `copilot-version` accepts any npm
+version spec, so you choose your own tradeoff between stability and freshness:
+
+```yaml
+copilot-version: '1.0.80'      # exact pin (default)
+copilot-version: '1.x'         # newest 1.x
+copilot-version: '>=1.0.80'    # floor, no ceiling
+copilot-version: 'latest'      # newest stable
+copilot-version: 'prerelease'  # bleeding edge
+```
+
+> [!NOTE]
+> `copilot-config` is written to `~/.copilot/settings.json`. CLI versions older
+> than `1.0.35` read user settings from `config.json` instead — the action
+> detects this and writes to the correct file, warning you when it does.
 
 ### Output Parameters
 
