@@ -3,7 +3,12 @@ on:
     workflows: ['*'] # All workflow failures
     types: [completed]
 
-permissions: write-all # We need workflow: write
+permissions:
+  contents: write
+  pull-requests: write
+  actions: read
+  copilot-requests: write
+
 concurrency:
   cancel-in-progress: true
   group: ${{ github.event_name }}-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -11,9 +16,10 @@ concurrency:
 jobs:
   ci-failure:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     if: ${{ github.event.workflow_run.conclusion == 'failure' }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: austenstone/copilot-cli@main
         with:
           repo-token: ${{ github.actor == 'dependabot[bot]' && secrets.PAT || github.token }}

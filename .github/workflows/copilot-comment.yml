@@ -2,10 +2,17 @@ on:
   issue_comment:
     types: [created]
 
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+  copilot-requests: write
+
 jobs:
   copilot:
     if: ${{ startsWith(github.event.comment.body, '/copilot') }}
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - name: Remove the /copilot prefix
         id: sanitize

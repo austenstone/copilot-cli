@@ -29,8 +29,9 @@ jobs:
   # Basic smoke test — defaults only
   basic:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: ./
         id: copilot
         with:
@@ -45,8 +46,9 @@ jobs:
   # The action defaults to `latest`, so this is what catches drift before consumers hit it.
   prerelease-drift:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: ./
         id: copilot
         with:
@@ -92,8 +94,9 @@ jobs:
   # Test autopilot + max-turns limit with tool use
   autopilot:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: ./
         with:
           prompt: "Create a file called test.txt with the content 'autopilot works'. Then read it back to confirm."
@@ -106,8 +109,9 @@ jobs:
   # Test silent mode — no usage stats in output
   silent:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: ./
         with:
           prompt: "Say 'silent mode works' and nothing else."
@@ -117,8 +121,9 @@ jobs:
   # Test model selection + reasoning effort
   model:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: ./
         with:
           prompt: "What model are you? Reply with just your model name."
@@ -129,8 +134,9 @@ jobs:
   # Test JSON output format
   json-output:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: ./
         with:
           prompt: "Say 'json works'."
@@ -140,8 +146,9 @@ jobs:
   # Test tool deny list — shell should be blocked
   denied-tools:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: ./
         with:
           prompt: "Try to run 'echo hello' in a shell. If you can't, just say 'shell denied'."
@@ -151,8 +158,9 @@ jobs:
   # Test GitHub MCP toolsets
   github-mcp:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: ./
         with:
           prompt: "Use the GitHub MCP to get info about the repo austenstone/copilot-cli. Tell me the description and star count."
@@ -162,8 +170,9 @@ jobs:
   # Test disable builtin MCPs
   no-builtin-mcps:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: ./
         with:
           prompt: "List your available MCP servers. If none, say 'no MCP servers available'."
@@ -173,8 +182,9 @@ jobs:
   # Test URL allow/deny
   url-controls:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: ./
         with:
           prompt: "Fetch https://api.github.com/zen and tell me what it says."
@@ -185,8 +195,9 @@ jobs:
   # Test share session to file + verify output
   share:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: ./
         id: copilot
         with:
@@ -202,8 +213,9 @@ jobs:
   # Test experimental flag
   experimental:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: ./
         with:
           prompt: "Say 'experimental mode active'."
@@ -213,8 +225,9 @@ jobs:
   # Test additional directories
   additional-dirs:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - run: |
           mkdir -p /tmp/copilot-test
           echo "found me" > /tmp/copilot-test/secret.txt
@@ -227,8 +240,9 @@ jobs:
   # Test custom agent
   agent:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: ./
         with:
           prompt: "What files are in this repo?"
@@ -238,8 +252,9 @@ jobs:
   # Test fail-on-error catches non-zero exit
   fail-on-error:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: ./
         id: copilot
         continue-on-error: true
@@ -255,8 +270,9 @@ jobs:
   # Test copilot-config is merged into settings.json
   config:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - name: Seed a pre-existing user setting
         run: |
           mkdir -p ~/.copilot
@@ -312,8 +328,9 @@ jobs:
   # Test long context window selection
   context:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: ./
         with:
           prompt: "Say hello and exit."
@@ -323,8 +340,9 @@ jobs:
   # Test blanket URL allow
   allow-all-urls:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: ./
         with:
           prompt: "Say hello and exit."
@@ -334,8 +352,9 @@ jobs:
   # Test blanket path allow
   allow-all-paths:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: ./
         with:
           prompt: "Say hello and exit."
@@ -345,8 +364,9 @@ jobs:
   # Test forwarding environment variables to the CLI
   secret-env-vars:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: ./
         env:
           DUMMY_SECRET: hunter2
@@ -358,8 +378,9 @@ jobs:
   # Test tool exclusion list
   excluded-tools:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: ./
         with:
           prompt: "Say hello."
@@ -369,8 +390,9 @@ jobs:
   # Test tool allow list
   available-tools:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: ./
         with:
           prompt: "Say hello."
@@ -380,8 +402,9 @@ jobs:
   # Test persistent memory
   enable-memory:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: ./
         with:
           prompt: "Say hello and exit."
@@ -391,8 +414,9 @@ jobs:
   # Test plan mode — the action skips --autopilot when mode is set
   mode-plan:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: ./
         with:
           prompt: "Say hello and exit."
@@ -402,8 +426,9 @@ jobs:
   # Test file attachments
   attachments:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - run: echo hi > note.txt
       - uses: ./
         with:
@@ -414,8 +439,9 @@ jobs:
   # Test disabling the temp directory
   disallow-temp-dir:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: ./
         with:
           prompt: "Say hello and exit."

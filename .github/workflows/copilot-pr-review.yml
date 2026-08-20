@@ -2,12 +2,18 @@ on:
   pull_request:
     types: [opened, reopened, synchronize]
 
+permissions:
+  contents: read
+  pull-requests: write
+  copilot-requests: write
+
 jobs:
   research:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     if: ${{ github.event.pull_request.state == 'open' }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: austenstone/copilot-cli@main
         with:
           prompt: |

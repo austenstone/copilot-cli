@@ -2,9 +2,15 @@ on:
   issues:
     types: [opened]
 
+permissions:
+  contents: read
+  issues: write
+  copilot-requests: write
+
 jobs:
   research:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     if: ${{ github.event.issue.state == 'open' && contains(github.event.issue.title, 'Research') }}
     steps:
       - uses: austenstone/copilot-cli@main

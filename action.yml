@@ -431,9 +431,14 @@ runs:
           echo "session_path=$SESSION_FILE" >> $GITHUB_OUTPUT
         fi
 
-        if [ "$FAIL_ON_ERROR" = "true" ] && [ "$EXIT_CODE" -ne 0 ]; then
-          echo "::error::Copilot CLI exited with code $EXIT_CODE"
-          exit $EXIT_CODE
+        if [ "$EXIT_CODE" -ne 0 ]; then
+          if [ "$FAIL_ON_ERROR" = "true" ]; then
+            echo "::error::Copilot CLI exited with code $EXIT_CODE"
+            exit $EXIT_CODE
+          fi
+          # Without this the job stays green on auth failures, so a broken
+          # workflow can look healthy for months.
+          echo "::warning::Copilot CLI exited with code $EXIT_CODE (fail-on-error is false, so this job will still pass)"
         fi
       env:
         GITHUB_TOKEN: ${{ inputs.copilot-token }}
