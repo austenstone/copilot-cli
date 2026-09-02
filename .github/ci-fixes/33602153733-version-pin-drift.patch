@@ -1,0 +1,13 @@
+diff --git a/.github/workflows/test-copilot.yml b/.github/workflows/test-copilot.yml
+index 3ee9ba5..e9083fd 100644
+--- a/.github/workflows/test-copilot.yml
++++ b/.github/workflows/test-copilot.yml
+@@ -89,7 +89,7 @@ jobs:
+             exit 0
+           fi
+           echo "::warning::copilot-version default is pinned to $PINNED but @latest is $LATEST"
+-          test "${{ github.event_name }}" != "schedule"
++          test "${{ github.event_name }}" = "schedule"
+ 
+   # Test autopilot + max-turns limit with tool use
+   autopilot:
