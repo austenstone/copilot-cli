@@ -20,7 +20,21 @@ jobs:
     if: ${{ github.event.workflow_run.conclusion == 'failure' }}
     steps:
       - uses: actions/checkout@v7
+      - name: Skip when auto-fix pull requests are already open
+        id: guard
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          open=$(gh pr list --state open --limit 100 --json headRefName \
+            --jq '[.[] | select(.headRefName | startswith("fix/ci-failure-"))] | length')
+          echo "open=${open}" >> "$GITHUB_OUTPUT"
+          if [ "${open}" -ge 3 ]; then
+            echo "::notice::${open} auto-fix pull requests already open; skipping so a recurring failure cannot open one per run."
+          fi
       - uses: austenstone/copilot-cli@main
+        if: ${{ fromJSON(steps.guard.outputs.open) < 3 }}
         with:
           repo-token: ${{ github.actor == 'dependabot[bot]' && secrets.PAT || github.token }}
           mcp-config: |
