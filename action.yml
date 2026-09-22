@@ -60,7 +60,7 @@ inputs:
   copilot-version:
     description: 'Version spec of the Copilot CLI to install. Examples: 1.0.80, 1.x, >=1.0.80, latest, prerelease.'
     required: false
-    default: '1.0.80'
+    default: '1.0.87'
   model:
     description: 'Model to use (e.g., "claude-sonnet-4.6", "claude-opus-4.8", "gpt-5.5")'
     required: false
