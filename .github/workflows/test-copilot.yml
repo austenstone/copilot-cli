@@ -73,23 +73,68 @@ jobs:
         run: test "${{ steps.copilot.outputs.exit-code }}" = "0"
 
   # The default copilot-version is pinned for reproducibility, so it needs a nudge
-  # when it falls behind. Only fails on the nightly schedule so PRs aren't blocked
-  # every time the CLI ships.
+  # when it falls behind. Drift is a warning, not a failure: a failing nightly run
+  # woke copilot-ci-fix, which opened a near-duplicate bump PR every night.
   version-pin-drift:
     runs-on: ubuntu-latest
+    outputs:
+      pinned: ${{ steps.compare.outputs.pinned }}
+      latest: ${{ steps.compare.outputs.latest }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - name: Compare pinned default against registry latest
+        id: compare
         run: |
           PINNED=$(python3 -c "import yaml;print(yaml.safe_load(open('action.yml'))['inputs']['copilot-version']['default'])")
           LATEST=$(npm view --registry=https://registry.npmjs.org '@github/copilot@latest' version)
           echo "pinned=\`$PINNED\` latest=\`$LATEST\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "pinned=$PINNED" >> "$GITHUB_OUTPUT"
+          echo "latest=$LATEST" >> "$GITHUB_OUTPUT"
           if [ "$PINNED" = "$LATEST" ]; then
             echo "Pinned default is current ($PINNED)."
-            exit 0
+          else
+            echo "::warning::copilot-version default is pinned to $PINNED but @latest is $LATEST"
           fi
-          echo "::warning::copilot-version default is pinned to $PINNED but @latest is $LATEST"
-          test "${{ github.event_name }}" != "schedule"
+
+  # Deterministic, idempotent bump: one rolling PR on a fixed branch, no agent run.
+  bump-pin:
+    needs: version-pin-drift
+    if: github.event_name == 'schedule' && needs.version-pin-drift.outputs.pinned != needs.version-pin-drift.outputs.latest
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+      pull-requests: write
+    env:
+      PINNED: ${{ needs.version-pin-drift.outputs.pinned }}
+      LATEST: ${{ needs.version-pin-drift.outputs.latest }}
+      BRANCH: automation/bump-copilot-version
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: Open or update the bump pull request
+        run: |
+          set -euo pipefail
+          semver='^[0-9]+\.[0-9]+\.[0-9]+$'
+          [[ "$PINNED" =~ $semver && "$LATEST" =~ $semver ]] || { echo "::error::Unexpected versions: '$PINNED' -> '$LATEST'"; exit 1; }
+          old=${PINNED//./\\.}
+          sed -i -E "s/^(    default: ')${old}(')$/\1${LATEST}\2/" action.yml
+          sed -i -E "s/^(\| \`copilot-version\` .*\| \`)${old}(\` \|)$/\1${LATEST}\2/; s/^(copilot-version: ')${old}('  +# exact pin)/\1${LATEST}\2/" README.md
+          git diff --quiet && { echo "::error::Pin $PINNED not found; bump patterns are stale"; exit 1; }
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git switch -C "$BRANCH"
+          git commit -am "chore: bump default copilot-version to $LATEST"
+          git push --force origin "$BRANCH"
+          title="chore: bump default copilot-version $PINNED → $LATEST"
+          body="Nightly \`version-pin-drift\` found \`@github/copilot@latest\` is \`$LATEST\` (pinned: \`$PINNED\`). This branch is force-updated each night, so there is only ever one bump PR."
+          if [ "$(gh pr list --head "$BRANCH" --state open --json number --jq length)" = "0" ]; then
+            gh pr create --head "$BRANCH" --title "$title" --body "$body"
+          else
+            gh pr edit "$BRANCH" --title "$title" --body "$body"
+          fi
 
   # Test autopilot + max-turns limit with tool use
   autopilot:
