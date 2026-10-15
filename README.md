@@ -135,7 +135,7 @@ Use `secret-env-vars` to strip and redact sensitive values from shell/MCP enviro
 | `log-level` | Log level: `none`, `error`, `warning`, `info`, `debug`, `all` | ❌ | `all` |
 | `upload-artifact` | Upload Copilot logs as workflow artifacts | ❌ | `true` |
 | `fail-on-error` | Fail the step if Copilot CLI exits with non-zero code | ❌ | `false` |
-| `copilot-version` | Version spec of the Copilot CLI to install. Examples: `1.0.80`, `1.x`, `>=1.0.80`, `latest`, `prerelease`. | ❌ | `1.0.80` |
+| `copilot-version` | Version spec of the Copilot CLI to install. Examples: `1.0.98`, `1.x`, `>=1.0.98`, `latest`, `prerelease`. | ❌ | `1.0.98` |
 | `options` | Additional CLI flags (e.g., `"--no-custom-instructions"`) | ❌ | `--screen-reader --no-color --stream off` |
 
 ### Pinning the Copilot CLI version
@@ -145,9 +145,9 @@ change your workflow's behavior overnight. `copilot-version` accepts any npm
 version spec, so you choose your own tradeoff between stability and freshness:
 
 ```yaml
-copilot-version: '1.0.80'      # exact pin (default)
+copilot-version: '1.0.98'      # exact pin (default)
 copilot-version: '1.x'         # newest 1.x
-copilot-version: '>=1.0.80'    # floor, no ceiling
+copilot-version: '>=1.0.98'    # floor, no ceiling
 copilot-version: 'latest'      # newest stable
 copilot-version: 'prerelease'  # bleeding edge
 ```
